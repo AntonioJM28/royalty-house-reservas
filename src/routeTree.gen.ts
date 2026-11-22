@@ -10,33 +10,157 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as AuthenticatedClienteRouteRouteImport } from './routes/_authenticated/cliente/route'
+import { Route as AuthenticatedPerfilRouteImport } from './routes/_authenticated/perfil'
+import { Route as AuthenticatedRecepcionRouteRouteImport } from './routes/_authenticated/recepcion/route'
+import { Route as AuthenticatedClienteIndexRouteImport } from './routes/_authenticated/cliente/index'
+import { Route as AuthenticatedClienteNuevaRouteImport } from './routes/_authenticated/cliente/nueva'
+import { Route as AuthenticatedRecepcionIndexRouteImport } from './routes/_authenticated/recepcion/index'
+import { Route as AuthenticatedRecepcionMostradorRouteImport } from './routes/_authenticated/recepcion/mostrador'
+import { Route as AuthenticatedClienteReservaIdRouteImport } from './routes/_authenticated/cliente/reserva.$id'
+import { Route as AuthenticatedRecepcionReservaIdRouteImport } from './routes/_authenticated/recepcion/reserva.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedClienteRouteRoute =
+  AuthenticatedClienteRouteRouteImport.update({
+    id: '/cliente',
+    path: '/cliente',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedPerfilRoute = AuthenticatedPerfilRouteImport.update({
+  id: '/perfil',
+  path: '/perfil',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedRecepcionRouteRoute =
+  AuthenticatedRecepcionRouteRouteImport.update({
+    id: '/recepcion',
+    path: '/recepcion',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedClienteIndexRoute =
+  AuthenticatedClienteIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedClienteRouteRoute,
+  } as any)
+const AuthenticatedClienteNuevaRoute =
+  AuthenticatedClienteNuevaRouteImport.update({
+    id: '/nueva',
+    path: '/nueva',
+    getParentRoute: () => AuthenticatedClienteRouteRoute,
+  } as any)
+const AuthenticatedRecepcionIndexRoute =
+  AuthenticatedRecepcionIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedRecepcionRouteRoute,
+  } as any)
+const AuthenticatedRecepcionMostradorRoute =
+  AuthenticatedRecepcionMostradorRouteImport.update({
+    id: '/mostrador',
+    path: '/mostrador',
+    getParentRoute: () => AuthenticatedRecepcionRouteRoute,
+  } as any)
+const AuthenticatedClienteReservaIdRoute =
+  AuthenticatedClienteReservaIdRouteImport.update({
+    id: '/reserva/$id',
+    path: '/reserva/$id',
+    getParentRoute: () => AuthenticatedClienteRouteRoute,
+  } as any)
+const AuthenticatedRecepcionReservaIdRoute =
+  AuthenticatedRecepcionReservaIdRouteImport.update({
+    id: '/reserva/$id',
+    path: '/reserva/$id',
+    getParentRoute: () => AuthenticatedRecepcionRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/cliente': typeof AuthenticatedClienteRouteRouteWithChildren
+  '/recepcion': typeof AuthenticatedRecepcionRouteRouteWithChildren
+  '/perfil': typeof AuthenticatedPerfilRoute
+  '/cliente/nueva': typeof AuthenticatedClienteNuevaRoute
+  '/recepcion/mostrador': typeof AuthenticatedRecepcionMostradorRoute
+  '/cliente/': typeof AuthenticatedClienteIndexRoute
+  '/recepcion/': typeof AuthenticatedRecepcionIndexRoute
+  '/cliente/reserva/$id': typeof AuthenticatedClienteReservaIdRoute
+  '/recepcion/reserva/$id': typeof AuthenticatedRecepcionReservaIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/perfil': typeof AuthenticatedPerfilRoute
+  '/cliente/nueva': typeof AuthenticatedClienteNuevaRoute
+  '/recepcion/mostrador': typeof AuthenticatedRecepcionMostradorRoute
+  '/cliente': typeof AuthenticatedClienteIndexRoute
+  '/recepcion': typeof AuthenticatedRecepcionIndexRoute
+  '/cliente/reserva/$id': typeof AuthenticatedClienteReservaIdRoute
+  '/recepcion/reserva/$id': typeof AuthenticatedRecepcionReservaIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/_authenticated/cliente': typeof AuthenticatedClienteRouteRouteWithChildren
+  '/_authenticated/recepcion': typeof AuthenticatedRecepcionRouteRouteWithChildren
+  '/_authenticated/perfil': typeof AuthenticatedPerfilRoute
+  '/_authenticated/cliente/nueva': typeof AuthenticatedClienteNuevaRoute
+  '/_authenticated/recepcion/mostrador': typeof AuthenticatedRecepcionMostradorRoute
+  '/_authenticated/cliente/': typeof AuthenticatedClienteIndexRoute
+  '/_authenticated/recepcion/': typeof AuthenticatedRecepcionIndexRoute
+  '/_authenticated/cliente/reserva/$id': typeof AuthenticatedClienteReservaIdRoute
+  '/_authenticated/recepcion/reserva/$id': typeof AuthenticatedRecepcionReservaIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/cliente'
+    | '/recepcion'
+    | '/perfil'
+    | '/cliente/nueva'
+    | '/recepcion/mostrador'
+    | '/cliente/'
+    | '/recepcion/'
+    | '/cliente/reserva/$id'
+    | '/recepcion/reserva/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/perfil'
+    | '/cliente/nueva'
+    | '/recepcion/mostrador'
+    | '/cliente'
+    | '/recepcion'
+    | '/cliente/reserva/$id'
+    | '/recepcion/reserva/$id'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authenticated'
+    | '/_authenticated/cliente'
+    | '/_authenticated/recepcion'
+    | '/_authenticated/perfil'
+    | '/_authenticated/cliente/nueva'
+    | '/_authenticated/recepcion/mostrador'
+    | '/_authenticated/cliente/'
+    | '/_authenticated/recepcion/'
+    | '/_authenticated/cliente/reserva/$id'
+    | '/_authenticated/recepcion/reserva/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +172,134 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/cliente': {
+      id: '/_authenticated/cliente'
+      path: '/cliente'
+      fullPath: '/cliente'
+      preLoaderRoute: typeof AuthenticatedClienteRouteRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/perfil': {
+      id: '/_authenticated/perfil'
+      path: '/perfil'
+      fullPath: '/perfil'
+      preLoaderRoute: typeof AuthenticatedPerfilRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/recepcion': {
+      id: '/_authenticated/recepcion'
+      path: '/recepcion'
+      fullPath: '/recepcion'
+      preLoaderRoute: typeof AuthenticatedRecepcionRouteRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/cliente/': {
+      id: '/_authenticated/cliente/'
+      path: '/'
+      fullPath: '/cliente/'
+      preLoaderRoute: typeof AuthenticatedClienteIndexRouteImport
+      parentRoute: typeof AuthenticatedClienteRouteRoute
+    }
+    '/_authenticated/cliente/nueva': {
+      id: '/_authenticated/cliente/nueva'
+      path: '/nueva'
+      fullPath: '/cliente/nueva'
+      preLoaderRoute: typeof AuthenticatedClienteNuevaRouteImport
+      parentRoute: typeof AuthenticatedClienteRouteRoute
+    }
+    '/_authenticated/recepcion/': {
+      id: '/_authenticated/recepcion/'
+      path: '/'
+      fullPath: '/recepcion/'
+      preLoaderRoute: typeof AuthenticatedRecepcionIndexRouteImport
+      parentRoute: typeof AuthenticatedRecepcionRouteRoute
+    }
+    '/_authenticated/recepcion/mostrador': {
+      id: '/_authenticated/recepcion/mostrador'
+      path: '/mostrador'
+      fullPath: '/recepcion/mostrador'
+      preLoaderRoute: typeof AuthenticatedRecepcionMostradorRouteImport
+      parentRoute: typeof AuthenticatedRecepcionRouteRoute
+    }
+    '/_authenticated/cliente/reserva/$id': {
+      id: '/_authenticated/cliente/reserva/$id'
+      path: '/reserva/$id'
+      fullPath: '/cliente/reserva/$id'
+      preLoaderRoute: typeof AuthenticatedClienteReservaIdRouteImport
+      parentRoute: typeof AuthenticatedClienteRouteRoute
+    }
+    '/_authenticated/recepcion/reserva/$id': {
+      id: '/_authenticated/recepcion/reserva/$id'
+      path: '/reserva/$id'
+      fullPath: '/recepcion/reserva/$id'
+      preLoaderRoute: typeof AuthenticatedRecepcionReservaIdRouteImport
+      parentRoute: typeof AuthenticatedRecepcionRouteRoute
+    }
   }
 }
 
+interface AuthenticatedClienteRouteRouteChildren {
+  AuthenticatedClienteNuevaRoute: typeof AuthenticatedClienteNuevaRoute
+  AuthenticatedClienteIndexRoute: typeof AuthenticatedClienteIndexRoute
+  AuthenticatedClienteReservaIdRoute: typeof AuthenticatedClienteReservaIdRoute
+}
+
+const AuthenticatedClienteRouteRouteChildren: AuthenticatedClienteRouteRouteChildren =
+  {
+    AuthenticatedClienteNuevaRoute: AuthenticatedClienteNuevaRoute,
+    AuthenticatedClienteIndexRoute: AuthenticatedClienteIndexRoute,
+    AuthenticatedClienteReservaIdRoute: AuthenticatedClienteReservaIdRoute,
+  }
+
+const AuthenticatedClienteRouteRouteWithChildren =
+  AuthenticatedClienteRouteRoute._addFileChildren(
+    AuthenticatedClienteRouteRouteChildren,
+  )
+
+interface AuthenticatedRecepcionRouteRouteChildren {
+  AuthenticatedRecepcionMostradorRoute: typeof AuthenticatedRecepcionMostradorRoute
+  AuthenticatedRecepcionIndexRoute: typeof AuthenticatedRecepcionIndexRoute
+  AuthenticatedRecepcionReservaIdRoute: typeof AuthenticatedRecepcionReservaIdRoute
+}
+
+const AuthenticatedRecepcionRouteRouteChildren: AuthenticatedRecepcionRouteRouteChildren =
+  {
+    AuthenticatedRecepcionMostradorRoute: AuthenticatedRecepcionMostradorRoute,
+    AuthenticatedRecepcionIndexRoute: AuthenticatedRecepcionIndexRoute,
+    AuthenticatedRecepcionReservaIdRoute: AuthenticatedRecepcionReservaIdRoute,
+  }
+
+const AuthenticatedRecepcionRouteRouteWithChildren =
+  AuthenticatedRecepcionRouteRoute._addFileChildren(
+    AuthenticatedRecepcionRouteRouteChildren,
+  )
+
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedClienteRouteRoute: typeof AuthenticatedClienteRouteRouteWithChildren
+  AuthenticatedRecepcionRouteRoute: typeof AuthenticatedRecepcionRouteRouteWithChildren
+  AuthenticatedPerfilRoute: typeof AuthenticatedPerfilRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedClienteRouteRoute: AuthenticatedClienteRouteRouteWithChildren,
+  AuthenticatedRecepcionRouteRoute:
+    AuthenticatedRecepcionRouteRouteWithChildren,
+  AuthenticatedPerfilRoute: AuthenticatedPerfilRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

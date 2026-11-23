@@ -1,0 +1,2 @@
+DROP POLICY IF EXISTS "lectura autenticados" ON public.configuracion;
+CREATE POLICY "lectura usuarios con sesion" ON public.configuracion FOR SELECT TO authenticated USING (auth.uid() IS NOT NULL AND id = 1);

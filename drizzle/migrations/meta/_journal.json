@@ -15,6 +15,13 @@
       "when": 1795307441257,
       "tag": "0001_migration",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1795444649172,
+      "tag": "0002_configuracion_lectura_con_sesion",
+      "breakpoints": true
     }
   ]
 }

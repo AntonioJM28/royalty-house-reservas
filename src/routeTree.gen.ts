@@ -14,6 +14,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedClienteRouteRouteImport } from './routes/_authenticated/cliente/route'
 import { Route as AuthenticatedPerfilRouteImport } from './routes/_authenticated/perfil'
 import { Route as AuthenticatedRecepcionRouteRouteImport } from './routes/_authenticated/recepcion/route'
+import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
 import { Route as AuthenticatedClienteIndexRouteImport } from './routes/_authenticated/cliente/index'
 import { Route as AuthenticatedClienteNuevaRouteImport } from './routes/_authenticated/cliente/nueva'
 import { Route as AuthenticatedRecepcionIndexRouteImport } from './routes/_authenticated/recepcion/index'
@@ -47,6 +48,11 @@ const AuthenticatedRecepcionRouteRoute =
     path: '/recepcion',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
+  id: '/admin/',
+  path: '/admin/',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedClienteIndexRoute =
   AuthenticatedClienteIndexRouteImport.update({
     id: '/',
@@ -91,6 +97,7 @@ export interface FileRoutesByFullPath {
   '/perfil': typeof AuthenticatedPerfilRoute
   '/cliente/nueva': typeof AuthenticatedClienteNuevaRoute
   '/recepcion/mostrador': typeof AuthenticatedRecepcionMostradorRoute
+  '/admin/': typeof AuthenticatedAdminIndexRoute
   '/cliente/': typeof AuthenticatedClienteIndexRoute
   '/recepcion/': typeof AuthenticatedRecepcionIndexRoute
   '/cliente/reserva/$id': typeof AuthenticatedClienteReservaIdRoute
@@ -101,6 +108,7 @@ export interface FileRoutesByTo {
   '/perfil': typeof AuthenticatedPerfilRoute
   '/cliente/nueva': typeof AuthenticatedClienteNuevaRoute
   '/recepcion/mostrador': typeof AuthenticatedRecepcionMostradorRoute
+  '/admin': typeof AuthenticatedAdminIndexRoute
   '/cliente': typeof AuthenticatedClienteIndexRoute
   '/recepcion': typeof AuthenticatedRecepcionIndexRoute
   '/cliente/reserva/$id': typeof AuthenticatedClienteReservaIdRoute
@@ -115,6 +123,7 @@ export interface FileRoutesById {
   '/_authenticated/perfil': typeof AuthenticatedPerfilRoute
   '/_authenticated/cliente/nueva': typeof AuthenticatedClienteNuevaRoute
   '/_authenticated/recepcion/mostrador': typeof AuthenticatedRecepcionMostradorRoute
+  '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/cliente/': typeof AuthenticatedClienteIndexRoute
   '/_authenticated/recepcion/': typeof AuthenticatedRecepcionIndexRoute
   '/_authenticated/cliente/reserva/$id': typeof AuthenticatedClienteReservaIdRoute
@@ -129,6 +138,7 @@ export interface FileRouteTypes {
     | '/perfil'
     | '/cliente/nueva'
     | '/recepcion/mostrador'
+    | '/admin/'
     | '/cliente/'
     | '/recepcion/'
     | '/cliente/reserva/$id'
@@ -139,6 +149,7 @@ export interface FileRouteTypes {
     | '/perfil'
     | '/cliente/nueva'
     | '/recepcion/mostrador'
+    | '/admin'
     | '/cliente'
     | '/recepcion'
     | '/cliente/reserva/$id'
@@ -152,6 +163,7 @@ export interface FileRouteTypes {
     | '/_authenticated/perfil'
     | '/_authenticated/cliente/nueva'
     | '/_authenticated/recepcion/mostrador'
+    | '/_authenticated/admin/'
     | '/_authenticated/cliente/'
     | '/_authenticated/recepcion/'
     | '/_authenticated/cliente/reserva/$id'
@@ -198,6 +210,13 @@ declare module '@tanstack/react-router' {
       path: '/recepcion'
       fullPath: '/recepcion'
       preLoaderRoute: typeof AuthenticatedRecepcionRouteRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin/': {
+      id: '/_authenticated/admin/'
+      path: '/admin'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/cliente/': {
@@ -285,6 +304,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedClienteRouteRoute: typeof AuthenticatedClienteRouteRouteWithChildren
   AuthenticatedRecepcionRouteRoute: typeof AuthenticatedRecepcionRouteRouteWithChildren
   AuthenticatedPerfilRoute: typeof AuthenticatedPerfilRoute
+  AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -292,6 +312,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedRecepcionRouteRoute:
     AuthenticatedRecepcionRouteRouteWithChildren,
   AuthenticatedPerfilRoute: AuthenticatedPerfilRoute,
+  AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =

@@ -14,11 +14,12 @@ export const catalogoQuery = queryOptions({
     const [recursos, tarifas, horario, config, peliculas, productos] = await Promise.all([
       q(supabase.from("recursos").select("*").order("nombre")),
       q(supabase.from("tarifas").select("*")),
-      q(supabase.from("horario_atencion").select("*").eq("id", 1).single()),
-      q(supabase.from("configuracion").select("*").eq("id", 1).single()),
+      supabase.from("horario_atencion").select("*").eq("id", 1).single().then((r) => { if (r.error) throw r.error; return r.data; }),
+      supabase.from("configuracion").select("*").eq("id", 1).single().then((r) => { if (r.error) throw r.error; return r.data; }),
       q(supabase.from("peliculas").select("*").order("titulo")),
       q(supabase.from("productos").select("*").order("nombre")),
     ]);
+    if (!horario || !config) throw new Error("Falta la configuración del negocio.");
     const tarifa = (t: TipoRecurso) => Number(tarifas.find((x) => x.tipo === t)?.precio_hora ?? 0);
     return { recursos, tarifas, horario, config, peliculas, productos, tarifa };
   },

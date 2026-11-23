@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { catalogoQuery, ocupacionQuery } from "@/lib/datos";
 import {
-  bloquesPelicula, bs, costoEstimado, hh, hoyLaPaz, horaDe, inicioDisponible, mensajeError, rango,
+  bloquesPelicula, bs, costoEstimado, costoMinicine, MAX_PERSONAS_MINICINE, hh, hoyLaPaz, horaDe, inicioDisponible, mensajeError, rango,
   TIPO_LABEL, type TipoRecurso,
 } from "@/lib/negocio";
 import { cn } from "@/lib/utils";
@@ -23,6 +23,7 @@ export function ReservaBuilder({ mostrador, onCreada }: { mostrador?: boolean; o
   const [fecha, setFecha] = useState(hoyLaPaz());
   const [peliculaId, setPeliculaId] = useState<string | null>(null);
   const [duracion, setDuracion] = useState(1);
+  const [personas, setPersonas] = useState(2);
   const [sel, setSel] = useState<{ recursoId: string; inicio: number } | null>(null);
   const [candy, setCandy] = useState<Record<string, number>>({});
   const [nombre, setNombre] = useState("");
@@ -66,7 +67,7 @@ export function ReservaBuilder({ mostrador, onCreada }: { mostrador?: boolean; o
   const items = productosActivos
     .filter((p) => (candy[p.id] ?? 0) > 0)
     .map((p) => ({ producto_id: p.id, nombre: p.nombre, precio: Number(p.precio), cantidad: candy[p.id] ?? 0 }));
-  const total = recursoSel ? costoEstimado(cat.tarifa(recursoSel.tipo), bloques, servicio === "minicine" ? items : []) : 0;
+  const total = recursoSel ? (servicio === "minicine" ? costoMinicine(cat.tarifa(recursoSel.tipo), personas, items) : costoEstimado(cat.tarifa(recursoSel.tipo), bloques)) : 0;
 
   async function confirmar() {
     if (!sel) return;
@@ -235,7 +236,16 @@ export function ReservaBuilder({ mostrador, onCreada }: { mostrador?: boolean; o
                 {pelicula && servicio === "minicine" && (<><dt className="text-muted-foreground">Película</dt><dd>{pelicula.titulo}</dd></>)}
                 <dt className="text-muted-foreground">Fecha</dt><dd>{fecha}</dd>
                 <dt className="text-muted-foreground">Hora</dt><dd>{rango(sel.inicio, bloques)}</dd>
-                <dt className="text-muted-foreground">Duración</dt><dd>{bloques} h × {bs(cat.tarifa(recursoSel.tipo))}</dd>
+                {servicio === "minicine" ? (<>
+                  <dt className="text-muted-foreground">Duración</dt><dd>{bloques} h</dd>
+                  <dt className="text-muted-foreground">Personas</dt>
+                  <dd className="flex items-center gap-1">
+                    <Button type="button" size="icon" variant="outline" className="h-7 w-7" aria-label="Quitar persona" onClick={() => setPersonas((n) => Math.max(1, n - 1))}><Minus className="h-3 w-3" /></Button>
+                    <span className="w-5 text-center">{personas}</span>
+                    <Button type="button" size="icon" variant="outline" className="h-7 w-7" aria-label="Agregar persona" onClick={() => setPersonas((n) => Math.min(MAX_PERSONAS_MINICINE, n + 1))}><Plus className="h-3 w-3" /></Button>
+                    <span className="text-muted-foreground">× {bs(cat.tarifa(recursoSel.tipo))} (máx. {MAX_PERSONAS_MINICINE})</span>
+                  </dd>
+                </>) : (<><dt className="text-muted-foreground">Duración</dt><dd>{bloques} h × {bs(cat.tarifa(recursoSel.tipo))}</dd></>)}
               </dl>
               {servicio === "minicine" && (
                 <div className="space-y-2 border-t border-border pt-3">

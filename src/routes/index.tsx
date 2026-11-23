@@ -58,7 +58,7 @@ function Landing() {
         <section className="grid gap-4 pb-16 sm:grid-cols-3">
           {[
             { i: Target, t: "Billar normal y VIP", d: "Mesas desde Bs 30 la hora, de 1 a 4 horas." },
-            { i: Clapperboard, t: "Salas de minicine", d: "Salas privadas para 8 o 12 personas con la película que elijas." },
+            { i: Clapperboard, t: "Salas de minicine", d: "Salas privadas de hasta 7 personas, Bs 10 por persona, con la película que elijas." },
             { i: Popcorn, t: "Candy bar", d: "Deja tu pedido listo para tu función de minicine." },
           ].map(({ i: Icon, t, d }) => (
             <div key={t} className="rounded-xl border border-border bg-card/70 p-5">

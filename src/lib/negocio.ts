@@ -51,6 +51,14 @@ export function costoEstimado(
   return precioHora * bloques + productos.reduce((s, p) => s + p.precio * p.cantidad, 0);
 }
 
+export const MAX_PERSONAS_MINICINE = 7;
+
+/** Minicine: precio por persona × personas (máx. 7) + Σ productos; no depende de la duración. */
+export function costoMinicine(precioPersona: number, personas: number, productos: { precio: number; cantidad: number }[] = []): number {
+  const n = Math.min(Math.max(1, Math.floor(personas)), MAX_PERSONAS_MINICINE);
+  return precioPersona * n + productos.reduce((s, p) => s + p.precio * p.cantidad, 0);
+}
+
 /** RN 10: el cliente puede cancelar si faltan al menos `horasMin` horas. */
 export function puedeCancelar(fecha: string, hora: string, horasMin: number, now: number = Date.now()): boolean {
   return instanteLocal(fecha, hora) - now >= horasMin * 3600_000;

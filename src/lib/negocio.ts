@@ -95,6 +95,7 @@ const ERRORES: Record<string, string> = {
   HORA_PASADA: "No se pueden reservar horas pasadas.",
   FUERA_DE_HORARIO: "El horario elegido está fuera del horario de atención.",
   BLOQUES_INVALIDOS: "La duración elegida no es válida.",
+  PERSONAS_INVALIDAS: "Indica entre 1 y 7 asistentes para el minicine.",
   PELICULA_REQUERIDA: "Debes elegir una película en cartelera.",
   CANDY_SOLO_MINICINE: "El candy bar solo está disponible para minicine.",
   SIN_STOCK: "No hay existencias suficientes de ese producto.",

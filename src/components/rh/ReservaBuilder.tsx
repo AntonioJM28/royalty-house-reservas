@@ -82,6 +82,7 @@ export function ReservaBuilder({ mostrador, onCreada }: { mostrador?: boolean; o
       p_nombre_cliente: mostrador ? nombre.trim() : undefined,
       p_telefono_cliente: mostrador ? tel.trim() : undefined,
       p_productos: servicio === "minicine" ? items.map(({ producto_id, cantidad }) => ({ producto_id, cantidad })) : [],
+      p_personas: servicio === "minicine" ? personas : undefined,
     } as never);
     setEnviando(false);
     if (error) {

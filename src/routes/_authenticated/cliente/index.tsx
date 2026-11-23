@@ -56,7 +56,7 @@ function MisReservas() {
                     <div>
                       <Link to="/cliente/reserva/$id" params={{ id: r.id }} className="font-mono text-lg font-semibold text-primary hover:underline">{r.codigo}</Link>
                       <p className="text-sm">{r.recursos?.nombre} · {r.recursos ? TIPO_LABEL[r.recursos.tipo] : ""}</p>
-                      {r.peliculas && <p className="text-sm text-muted-foreground">{r.peliculas.titulo}</p>}
+                      {r.peliculas && <p className="text-sm text-muted-foreground">{r.peliculas.titulo}{r.personas != null && ` · ${r.personas} asistentes`}</p>}
                       <p className="text-sm text-muted-foreground">{r.fecha} · {rango(horaDe(r.hora_inicio), r.bloques)}</p>
                     </div>
                     <EstadoBadge estado={r.estado} />

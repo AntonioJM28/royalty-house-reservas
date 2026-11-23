@@ -18,6 +18,7 @@ export function Confirmacion({ reserva, pedido }: { reserva: ReservaFull; pedido
           <dt className="text-muted-foreground">Cliente</dt><dd>{reserva.nombre_cliente} · {reserva.telefono_cliente}</dd>
           <dt className="text-muted-foreground">Recurso</dt><dd>{reserva.recursos?.nombre} ({reserva.recursos ? TIPO_LABEL[reserva.recursos.tipo] : ""})</dd>
           {reserva.peliculas && (<><dt className="text-muted-foreground">Película</dt><dd>{reserva.peliculas.titulo}</dd></>)}
+          {reserva.personas != null && (<><dt className="text-muted-foreground">Asistentes</dt><dd>{reserva.personas}</dd></>)}
           <dt className="text-muted-foreground">Fecha</dt><dd>{reserva.fecha}</dd>
           <dt className="text-muted-foreground">Horario</dt><dd>{rango(horaDe(reserva.hora_inicio), reserva.bloques)} ({reserva.bloques} h)</dd>
         </dl>

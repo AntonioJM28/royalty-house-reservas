@@ -5,7 +5,7 @@ import type { EstadoReserva, TipoRecurso } from "./negocio";
 
 export type ReservaFull = {
   id: string; codigo: string; usuario_id: string | null; nombre_cliente: string; telefono_cliente: string;
-  recurso_id: string; pelicula_id: string | null; fecha: string; hora_inicio: string; bloques: number;
+  recurso_id: string; pelicula_id: string | null; fecha: string; hora_inicio: string; bloques: number; personas: number | null;
   estado: EstadoReserva; hora_entrada: string | null; hora_salida: string | null;
   recursos: { nombre: string; tipo: TipoRecurso } | null;
   peliculas: { titulo: string; duracion_min: number } | null;

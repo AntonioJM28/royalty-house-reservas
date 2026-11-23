@@ -84,7 +84,7 @@ function Lista({ items, tol, compacto }: { items: ReservaFull[]; tol: number; co
               <span className="ml-2">{rango(horaDe(r.hora_inicio), r.bloques)}</span>
               <p>{r.nombre_cliente} · <span className="text-muted-foreground">{r.telefono_cliente}</span></p>
               {!compacto && <p className="text-muted-foreground">{r.fecha} · {r.recursos?.nombre}</p>}
-              {r.peliculas && <p className="text-muted-foreground">{r.peliculas.titulo}</p>}
+              {r.peliculas && <p className="text-muted-foreground">{r.peliculas.titulo}{r.personas != null && ` · ${r.personas} asistentes`}</p>}
             </div>
             <EstadoBadge estado={r.estado} />
           </div>

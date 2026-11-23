@@ -304,6 +304,7 @@ export type Database = {
           id: string
           nombre_cliente: string
           pelicula_id: string | null
+          personas: number | null
           recurso_id: string
           telefono_cliente: string
           usuario_id: string | null
@@ -321,6 +322,7 @@ export type Database = {
           id?: string
           nombre_cliente: string
           pelicula_id?: string | null
+          personas?: number | null
           recurso_id: string
           telefono_cliente: string
           usuario_id?: string | null
@@ -338,6 +340,7 @@ export type Database = {
           id?: string
           nombre_cliente?: string
           pelicula_id?: string | null
+          personas?: number | null
           recurso_id?: string
           telefono_cliente?: string
           usuario_id?: string | null
@@ -413,6 +416,7 @@ export type Database = {
           p_hora_inicio: string
           p_nombre_cliente?: string
           p_pelicula_id?: string
+          p_personas?: number
           p_productos?: Json
           p_recurso_id: string
           p_telefono_cliente?: string
@@ -430,6 +434,7 @@ export type Database = {
           id: string
           nombre_cliente: string
           pelicula_id: string | null
+          personas: number | null
           recurso_id: string
           telefono_cliente: string
           usuario_id: string | null

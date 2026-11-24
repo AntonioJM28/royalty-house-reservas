@@ -10,7 +10,7 @@ export function AppHeader({ sesion }: { sesion: Sesion }) {
   const qc = useQueryClient();
   const links: { to: string; label: string }[] = [];
   if (esAdmin(sesion.roles)) {
-    links.push({ to: "/admin", label: "Administración" }, { to: "/admin/personal", label: "Personal" }, { to: "/admin/reportes", label: "Reportes" });
+    links.push({ to: "/admin", label: "Administración" });
   }
   if (esPersonal(sesion.roles)) {
     links.push({ to: "/recepcion", label: "Panel del día" }, { to: "/recepcion/mostrador", label: "Mostrador" });

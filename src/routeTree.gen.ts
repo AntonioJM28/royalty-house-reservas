@@ -11,10 +11,16 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authenticated/admin/route'
 import { Route as AuthenticatedClienteRouteRouteImport } from './routes/_authenticated/cliente/route'
 import { Route as AuthenticatedPerfilRouteImport } from './routes/_authenticated/perfil'
 import { Route as AuthenticatedRecepcionRouteRouteImport } from './routes/_authenticated/recepcion/route'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
+import { Route as AuthenticatedAdminPeliculasRouteImport } from './routes/_authenticated/admin/peliculas'
+import { Route as AuthenticatedAdminPersonalRouteImport } from './routes/_authenticated/admin/personal'
+import { Route as AuthenticatedAdminProductosRouteImport } from './routes/_authenticated/admin/productos'
+import { Route as AuthenticatedAdminSalasRouteImport } from './routes/_authenticated/admin/salas'
+import { Route as AuthenticatedAdminTarifasRouteImport } from './routes/_authenticated/admin/tarifas'
 import { Route as AuthenticatedClienteIndexRouteImport } from './routes/_authenticated/cliente/index'
 import { Route as AuthenticatedClienteNuevaRouteImport } from './routes/_authenticated/cliente/nueva'
 import { Route as AuthenticatedRecepcionIndexRouteImport } from './routes/_authenticated/recepcion/index'
@@ -30,6 +36,11 @@ const IndexRoute = IndexRouteImport.update({
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedAdminRouteRoute = AuthenticatedAdminRouteRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedClienteRouteRoute =
   AuthenticatedClienteRouteRouteImport.update({
@@ -49,10 +60,39 @@ const AuthenticatedRecepcionRouteRoute =
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
-  id: '/admin/',
-  path: '/admin/',
-  getParentRoute: () => AuthenticatedRouteRoute,
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedAdminRouteRoute,
 } as any)
+const AuthenticatedAdminPeliculasRoute =
+  AuthenticatedAdminPeliculasRouteImport.update({
+    id: '/peliculas',
+    path: '/peliculas',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminPersonalRoute =
+  AuthenticatedAdminPersonalRouteImport.update({
+    id: '/personal',
+    path: '/personal',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminProductosRoute =
+  AuthenticatedAdminProductosRouteImport.update({
+    id: '/productos',
+    path: '/productos',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminSalasRoute = AuthenticatedAdminSalasRouteImport.update({
+  id: '/salas',
+  path: '/salas',
+  getParentRoute: () => AuthenticatedAdminRouteRoute,
+} as any)
+const AuthenticatedAdminTarifasRoute =
+  AuthenticatedAdminTarifasRouteImport.update({
+    id: '/tarifas',
+    path: '/tarifas',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
 const AuthenticatedClienteIndexRoute =
   AuthenticatedClienteIndexRouteImport.update({
     id: '/',
@@ -92,9 +132,15 @@ const AuthenticatedRecepcionReservaIdRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/cliente': typeof AuthenticatedClienteRouteRouteWithChildren
   '/recepcion': typeof AuthenticatedRecepcionRouteRouteWithChildren
   '/perfil': typeof AuthenticatedPerfilRoute
+  '/admin/peliculas': typeof AuthenticatedAdminPeliculasRoute
+  '/admin/personal': typeof AuthenticatedAdminPersonalRoute
+  '/admin/productos': typeof AuthenticatedAdminProductosRoute
+  '/admin/salas': typeof AuthenticatedAdminSalasRoute
+  '/admin/tarifas': typeof AuthenticatedAdminTarifasRoute
   '/cliente/nueva': typeof AuthenticatedClienteNuevaRoute
   '/recepcion/mostrador': typeof AuthenticatedRecepcionMostradorRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
@@ -106,6 +152,11 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/perfil': typeof AuthenticatedPerfilRoute
+  '/admin/peliculas': typeof AuthenticatedAdminPeliculasRoute
+  '/admin/personal': typeof AuthenticatedAdminPersonalRoute
+  '/admin/productos': typeof AuthenticatedAdminProductosRoute
+  '/admin/salas': typeof AuthenticatedAdminSalasRoute
+  '/admin/tarifas': typeof AuthenticatedAdminTarifasRoute
   '/cliente/nueva': typeof AuthenticatedClienteNuevaRoute
   '/recepcion/mostrador': typeof AuthenticatedRecepcionMostradorRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
@@ -118,9 +169,15 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/_authenticated/admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/_authenticated/cliente': typeof AuthenticatedClienteRouteRouteWithChildren
   '/_authenticated/recepcion': typeof AuthenticatedRecepcionRouteRouteWithChildren
   '/_authenticated/perfil': typeof AuthenticatedPerfilRoute
+  '/_authenticated/admin/peliculas': typeof AuthenticatedAdminPeliculasRoute
+  '/_authenticated/admin/personal': typeof AuthenticatedAdminPersonalRoute
+  '/_authenticated/admin/productos': typeof AuthenticatedAdminProductosRoute
+  '/_authenticated/admin/salas': typeof AuthenticatedAdminSalasRoute
+  '/_authenticated/admin/tarifas': typeof AuthenticatedAdminTarifasRoute
   '/_authenticated/cliente/nueva': typeof AuthenticatedClienteNuevaRoute
   '/_authenticated/recepcion/mostrador': typeof AuthenticatedRecepcionMostradorRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
@@ -133,9 +190,15 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/admin'
     | '/cliente'
     | '/recepcion'
     | '/perfil'
+    | '/admin/peliculas'
+    | '/admin/personal'
+    | '/admin/productos'
+    | '/admin/salas'
+    | '/admin/tarifas'
     | '/cliente/nueva'
     | '/recepcion/mostrador'
     | '/admin/'
@@ -147,6 +210,11 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/perfil'
+    | '/admin/peliculas'
+    | '/admin/personal'
+    | '/admin/productos'
+    | '/admin/salas'
+    | '/admin/tarifas'
     | '/cliente/nueva'
     | '/recepcion/mostrador'
     | '/admin'
@@ -158,9 +226,15 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/_authenticated/admin'
     | '/_authenticated/cliente'
     | '/_authenticated/recepcion'
     | '/_authenticated/perfil'
+    | '/_authenticated/admin/peliculas'
+    | '/_authenticated/admin/personal'
+    | '/_authenticated/admin/productos'
+    | '/_authenticated/admin/salas'
+    | '/_authenticated/admin/tarifas'
     | '/_authenticated/cliente/nueva'
     | '/_authenticated/recepcion/mostrador'
     | '/_authenticated/admin/'
@@ -191,6 +265,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/admin': {
+      id: '/_authenticated/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthenticatedAdminRouteRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/cliente': {
       id: '/_authenticated/cliente'
       path: '/cliente'
@@ -214,10 +295,45 @@ declare module '@tanstack/react-router' {
     }
     '/_authenticated/admin/': {
       id: '/_authenticated/admin/'
-      path: '/admin'
+      path: '/'
       fullPath: '/admin/'
       preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/peliculas': {
+      id: '/_authenticated/admin/peliculas'
+      path: '/peliculas'
+      fullPath: '/admin/peliculas'
+      preLoaderRoute: typeof AuthenticatedAdminPeliculasRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/personal': {
+      id: '/_authenticated/admin/personal'
+      path: '/personal'
+      fullPath: '/admin/personal'
+      preLoaderRoute: typeof AuthenticatedAdminPersonalRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/productos': {
+      id: '/_authenticated/admin/productos'
+      path: '/productos'
+      fullPath: '/admin/productos'
+      preLoaderRoute: typeof AuthenticatedAdminProductosRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/salas': {
+      id: '/_authenticated/admin/salas'
+      path: '/salas'
+      fullPath: '/admin/salas'
+      preLoaderRoute: typeof AuthenticatedAdminSalasRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/tarifas': {
+      id: '/_authenticated/admin/tarifas'
+      path: '/tarifas'
+      fullPath: '/admin/tarifas'
+      preLoaderRoute: typeof AuthenticatedAdminTarifasRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
     }
     '/_authenticated/cliente/': {
       id: '/_authenticated/cliente/'
@@ -264,6 +380,30 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedAdminRouteRouteChildren {
+  AuthenticatedAdminPeliculasRoute: typeof AuthenticatedAdminPeliculasRoute
+  AuthenticatedAdminPersonalRoute: typeof AuthenticatedAdminPersonalRoute
+  AuthenticatedAdminProductosRoute: typeof AuthenticatedAdminProductosRoute
+  AuthenticatedAdminSalasRoute: typeof AuthenticatedAdminSalasRoute
+  AuthenticatedAdminTarifasRoute: typeof AuthenticatedAdminTarifasRoute
+  AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
+}
+
+const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren =
+  {
+    AuthenticatedAdminPeliculasRoute: AuthenticatedAdminPeliculasRoute,
+    AuthenticatedAdminPersonalRoute: AuthenticatedAdminPersonalRoute,
+    AuthenticatedAdminProductosRoute: AuthenticatedAdminProductosRoute,
+    AuthenticatedAdminSalasRoute: AuthenticatedAdminSalasRoute,
+    AuthenticatedAdminTarifasRoute: AuthenticatedAdminTarifasRoute,
+    AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
+  }
+
+const AuthenticatedAdminRouteRouteWithChildren =
+  AuthenticatedAdminRouteRoute._addFileChildren(
+    AuthenticatedAdminRouteRouteChildren,
+  )
+
 interface AuthenticatedClienteRouteRouteChildren {
   AuthenticatedClienteNuevaRoute: typeof AuthenticatedClienteNuevaRoute
   AuthenticatedClienteIndexRoute: typeof AuthenticatedClienteIndexRoute
@@ -301,18 +441,18 @@ const AuthenticatedRecepcionRouteRouteWithChildren =
   )
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAdminRouteRoute: typeof AuthenticatedAdminRouteRouteWithChildren
   AuthenticatedClienteRouteRoute: typeof AuthenticatedClienteRouteRouteWithChildren
   AuthenticatedRecepcionRouteRoute: typeof AuthenticatedRecepcionRouteRouteWithChildren
   AuthenticatedPerfilRoute: typeof AuthenticatedPerfilRoute
-  AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAdminRouteRoute: AuthenticatedAdminRouteRouteWithChildren,
   AuthenticatedClienteRouteRoute: AuthenticatedClienteRouteRouteWithChildren,
   AuthenticatedRecepcionRouteRoute:
     AuthenticatedRecepcionRouteRouteWithChildren,
   AuthenticatedPerfilRoute: AuthenticatedPerfilRoute,
-  AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =

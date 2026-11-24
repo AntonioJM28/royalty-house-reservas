@@ -28,3 +28,8 @@ use the editor.
   own key and store it in Secrets.
 - **Secrets.** Lovable manages them. Do not put secret values in the repo.
 <!-- LOVABLE:END -->
+
+## Application architecture
+- Keep administrator content under the guarded `/admin` layout and write through the authenticated browser client so existing database RLS remains the authority.
+- Share administrator forms and validation in focused administration modules, and invalidate both administrator and reservation catalog caches after edits so all screens read updated data.
+- Deactivate catalog items instead of deleting them to preserve existing reservation references; remove staff access through the existing allowlist trigger rather than writing roles from the browser.

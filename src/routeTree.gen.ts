@@ -19,6 +19,8 @@ import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authentic
 import { Route as AuthenticatedAdminPeliculasRouteImport } from './routes/_authenticated/admin/peliculas'
 import { Route as AuthenticatedAdminPersonalRouteImport } from './routes/_authenticated/admin/personal'
 import { Route as AuthenticatedAdminProductosRouteImport } from './routes/_authenticated/admin/productos'
+import { Route as AuthenticatedAdminReglasRouteImport } from './routes/_authenticated/admin/reglas'
+import { Route as AuthenticatedAdminReportesRouteImport } from './routes/_authenticated/admin/reportes'
 import { Route as AuthenticatedAdminSalasRouteImport } from './routes/_authenticated/admin/salas'
 import { Route as AuthenticatedAdminTarifasRouteImport } from './routes/_authenticated/admin/tarifas'
 import { Route as AuthenticatedClienteIndexRouteImport } from './routes/_authenticated/cliente/index'
@@ -82,6 +84,18 @@ const AuthenticatedAdminProductosRoute =
     path: '/productos',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
+const AuthenticatedAdminReglasRoute =
+  AuthenticatedAdminReglasRouteImport.update({
+    id: '/reglas',
+    path: '/reglas',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminReportesRoute =
+  AuthenticatedAdminReportesRouteImport.update({
+    id: '/reportes',
+    path: '/reportes',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
 const AuthenticatedAdminSalasRoute = AuthenticatedAdminSalasRouteImport.update({
   id: '/salas',
   path: '/salas',
@@ -139,6 +153,8 @@ export interface FileRoutesByFullPath {
   '/admin/peliculas': typeof AuthenticatedAdminPeliculasRoute
   '/admin/personal': typeof AuthenticatedAdminPersonalRoute
   '/admin/productos': typeof AuthenticatedAdminProductosRoute
+  '/admin/reglas': typeof AuthenticatedAdminReglasRoute
+  '/admin/reportes': typeof AuthenticatedAdminReportesRoute
   '/admin/salas': typeof AuthenticatedAdminSalasRoute
   '/admin/tarifas': typeof AuthenticatedAdminTarifasRoute
   '/cliente/nueva': typeof AuthenticatedClienteNuevaRoute
@@ -155,6 +171,8 @@ export interface FileRoutesByTo {
   '/admin/peliculas': typeof AuthenticatedAdminPeliculasRoute
   '/admin/personal': typeof AuthenticatedAdminPersonalRoute
   '/admin/productos': typeof AuthenticatedAdminProductosRoute
+  '/admin/reglas': typeof AuthenticatedAdminReglasRoute
+  '/admin/reportes': typeof AuthenticatedAdminReportesRoute
   '/admin/salas': typeof AuthenticatedAdminSalasRoute
   '/admin/tarifas': typeof AuthenticatedAdminTarifasRoute
   '/cliente/nueva': typeof AuthenticatedClienteNuevaRoute
@@ -176,6 +194,8 @@ export interface FileRoutesById {
   '/_authenticated/admin/peliculas': typeof AuthenticatedAdminPeliculasRoute
   '/_authenticated/admin/personal': typeof AuthenticatedAdminPersonalRoute
   '/_authenticated/admin/productos': typeof AuthenticatedAdminProductosRoute
+  '/_authenticated/admin/reglas': typeof AuthenticatedAdminReglasRoute
+  '/_authenticated/admin/reportes': typeof AuthenticatedAdminReportesRoute
   '/_authenticated/admin/salas': typeof AuthenticatedAdminSalasRoute
   '/_authenticated/admin/tarifas': typeof AuthenticatedAdminTarifasRoute
   '/_authenticated/cliente/nueva': typeof AuthenticatedClienteNuevaRoute
@@ -197,6 +217,8 @@ export interface FileRouteTypes {
     | '/admin/peliculas'
     | '/admin/personal'
     | '/admin/productos'
+    | '/admin/reglas'
+    | '/admin/reportes'
     | '/admin/salas'
     | '/admin/tarifas'
     | '/cliente/nueva'
@@ -213,6 +235,8 @@ export interface FileRouteTypes {
     | '/admin/peliculas'
     | '/admin/personal'
     | '/admin/productos'
+    | '/admin/reglas'
+    | '/admin/reportes'
     | '/admin/salas'
     | '/admin/tarifas'
     | '/cliente/nueva'
@@ -233,6 +257,8 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/peliculas'
     | '/_authenticated/admin/personal'
     | '/_authenticated/admin/productos'
+    | '/_authenticated/admin/reglas'
+    | '/_authenticated/admin/reportes'
     | '/_authenticated/admin/salas'
     | '/_authenticated/admin/tarifas'
     | '/_authenticated/cliente/nueva'
@@ -321,6 +347,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminProductosRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
+    '/_authenticated/admin/reglas': {
+      id: '/_authenticated/admin/reglas'
+      path: '/reglas'
+      fullPath: '/admin/reglas'
+      preLoaderRoute: typeof AuthenticatedAdminReglasRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/reportes': {
+      id: '/_authenticated/admin/reportes'
+      path: '/reportes'
+      fullPath: '/admin/reportes'
+      preLoaderRoute: typeof AuthenticatedAdminReportesRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
     '/_authenticated/admin/salas': {
       id: '/_authenticated/admin/salas'
       path: '/salas'
@@ -384,6 +424,8 @@ interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminPeliculasRoute: typeof AuthenticatedAdminPeliculasRoute
   AuthenticatedAdminPersonalRoute: typeof AuthenticatedAdminPersonalRoute
   AuthenticatedAdminProductosRoute: typeof AuthenticatedAdminProductosRoute
+  AuthenticatedAdminReglasRoute: typeof AuthenticatedAdminReglasRoute
+  AuthenticatedAdminReportesRoute: typeof AuthenticatedAdminReportesRoute
   AuthenticatedAdminSalasRoute: typeof AuthenticatedAdminSalasRoute
   AuthenticatedAdminTarifasRoute: typeof AuthenticatedAdminTarifasRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
@@ -394,6 +436,8 @@ const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren
     AuthenticatedAdminPeliculasRoute: AuthenticatedAdminPeliculasRoute,
     AuthenticatedAdminPersonalRoute: AuthenticatedAdminPersonalRoute,
     AuthenticatedAdminProductosRoute: AuthenticatedAdminProductosRoute,
+    AuthenticatedAdminReglasRoute: AuthenticatedAdminReglasRoute,
+    AuthenticatedAdminReportesRoute: AuthenticatedAdminReportesRoute,
     AuthenticatedAdminSalasRoute: AuthenticatedAdminSalasRoute,
     AuthenticatedAdminTarifasRoute: AuthenticatedAdminTarifasRoute,
     AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,

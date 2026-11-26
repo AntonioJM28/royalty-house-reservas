@@ -1,217 +1,162 @@
 # Royalty House Reservas
 
-Construye un MVP funcional de una aplicación web responsive en español llamada "Royalty House" para gestionar reservas de mesas de billar (normales y VIP) y salas de minicine, con candy bar. Stack: React + TypeScript + Tailwind + shadcn/ui, con Supabase como backend (PostgreSQL, Auth con Google, RLS y funciones RPC). Zona horaria del negocio: America/La_Paz (UTC-4). Moneda: Bs.
+Aplicación web responsive en español para gestionar reservas de mesas de billar normales y VIP, salas de minicine y pedidos de candy bar. El proyecto usa Supabase como backend y mantiene el negocio alineado con la zona horaria de La Paz (America/La_Paz, UTC-4) y la moneda boliviana (Bs).
 
-## 1. Alcance
-DENTRO: login con Google; roles Cliente, Recepcionista y Administrador; consulta de disponibilidad en grilla; reserva de billar y minicine; confirmación en pantalla con código único; cancelación; reservas en mostrador; entrada y salida como cambios de estado; candy bar (catálogo, stock, pedido previo y consumos); administración (mesas, salas, tarifas, películas, productos, horario, lista blanca de personal); reportes de ocupación e ingresos estimados.
-FUERA (no los construyas): pagos en línea, registro de cobros o métodos de pago, facturación, impresión de comprobantes, app nativa, notificaciones por correo/WhatsApp/SMS, sugerencia automática de horarios alternativos, tiempo adicional automático y marcado automático de "no presentada". El pago es en efectivo en el local y NO se registra: solo se muestra como aviso en la confirmación.
+## Funcionalidades
 
-## 2. Roles y acceso
-- Clientes: inician sesión con Google. Cualquier correo que no esté en la lista blanca es CLIENTE.
-- Personal: su correo debe estar en la tabla lista_blanca con su rol (RECEPCIONISTA o ADMINISTRADOR), administrada por el administrador. Un trigger en el alta de usuario asigna el rol según esa lista. Sin contraseñas propias.
-- Los roles se guardan en una tabla user_roles separada (NUNCA en profiles) y se consultan con una función SECURITY DEFINER has_role(uid, role) para evitar recursión en RLS.
-- Primer ingreso de un cliente: pantalla para pedir teléfono y aceptar el tratamiento de datos (checkbox obligatorio) antes de poder reservar.
-- Rutas protegidas por rol: /cliente/, /recepcion/, /admin/*. Tras el login, redirige según el rol. El administrador puede entrar también a las pantallas de recepción.
+### Clientes
 
-## 3. Reglas de negocio (aplícalas en la base de datos, no solo en la interfaz)
-- RN 01/02: un recurso solo se reserva si está libre; no puede haber reservas superpuestas del mismo recurso.
-- RN 03: solo se pueden elegir horarios libres; los ocupados se muestran deshabilitados.
-- RN 04: reserva de billar = mesa (que define modalidad normal o VIP), hora y duración (1 a 4 bloques).
-- RN 05: reserva de minicine = sala + película + hora. Se elige primero la película; sus bloques = ceil(duración_min / 60).
-- RN 06: el candy bar solo se asocia a reservas de minicine.
-- RN 07: el stock se descuenta al REGISTRAR EL CONSUMO (recepción), no al reservar. No se puede consumir sin existencias.
-- RN 08: el pago es en efectivo en el local y no se registra.
-- RN 09: para reservar hay que haber aceptado el tratamiento de datos.
-- RN 10: el cliente cancela hasta 2 horas antes del inicio (valor en tabla configuracion). La recepcionista puede marcar "no presentada" pasados 15 minutos de tolerancia (configurable).
-- RN 11: máximo 2 reservas activas (CONFIRMADA y futuras) por cliente (configurable).
-Modelo de tiempo: bloques fijos de 1 hora; bloque = hora de inicio (14 = 14:00-15:00). La duración de una reserva es un número de bloques consecutivos. Solo hay bloques dentro del horario de atención. No se pueden reservar horas pasadas.
+- Inicio de sesión mediante Google.
+- Completar teléfono y aceptar el tratamiento de datos antes de reservar.
+- Reservar una mesa de billar normal o VIP por bloques de una hora, con una duración de 1 a 4 horas.
+- Elegir una sala de minicine y una película. La duración se calcula a partir de la duración de la película y se expresa en bloques consecutivos.
+- Indicar entre 1 y 7 asistentes para minicine.
+- Consultar horarios libres y ocupados, con bloqueo visual de los bloques no disponibles.
+- Agregar productos opcionales al pedido de candy bar de una reserva de minicine.
+- Confirmar la reserva y mostrar su código de 8 caracteres, detalles y aviso de pago en efectivo en el local.
+- Consultar y cancelar reservas propias dentro del plazo configurable.
 
-## 4. Modelo de datos (crea migraciones SQL con esto)
-```sql
-create type app_role as enum ('CLIENTE','RECEPCIONISTA','ADMINISTRADOR');
-create type tipo_recurso as enum ('MESA_NORMAL','MESA_VIP','SALA_MINICINE');
-create type estado_reserva as enum ('CONFIRMADA','EN_USO','FINALIZADA','CANCELADA','NO_PRESENTADA');
+### Recepción
 
-create table profiles (
-  id uuid primary key references auth.users(id) on delete cascade,
-  nombre text not null,
-  correo text not null unique,
-  telefono text,
-  acepto_datos boolean not null default false,
-  created_at timestamptz not null default now()
-);
+- Consultar las reservas del día y buscar por código o nombre.
+- Registrar reservas en mostrador con datos manuales de nombre y teléfono.
+- Cambiar estados entre confirmada, en uso, finalizada y no presentada.
+- Registrar entradas y salidas.
+- Consultar el pedido previo de candy bar y registrar consumos reales durante una función.
+- Descontar existencias únicamente cuando recepción registra el consumo.
 
-create table user_roles (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references auth.users(id) on delete cascade,
-  role app_role not null,
-  unique (user_id, role)
-);
+### Administración
 
-create table lista_blanca (
-  correo text primary key,
-  rol app_role not null check (rol in ('RECEPCIONISTA','ADMINISTRADOR')),
-  created_at timestamptz not null default now()
-);
+- La navegación por rol reconoce al administrador y permite conservar acceso a las pantallas de recepción.
+- La ruta `/admin` contiene la estructura base de la sección administrativa; el catálogo, personal y reportes tienen su correspondiente capa de datos y permisos en Supabase.
 
-create table recursos (
-  id uuid primary key default gen_random_uuid(),
-  nombre text not null unique,
-  tipo tipo_recurso not null,
-  capacidad int not null check (capacidad > 0),
-  activo boolean not null default true
-);
+## Tecnologías
 
-create table tarifas (
-  tipo tipo_recurso primary key,
-  precio_hora numeric(10,2) not null check (precio_hora >= 0)
-);
+- **React 19** y **TypeScript**: interfaz y tipado de componentes.
+- **TanStack Start** y **TanStack Router**: aplicación full-stack, renderizado, rutas por archivos y protección de navegación.
+- **TanStack React Query**: caché, refresco y sincronización de consultas.
+- **Vite**: servidor de desarrollo y construcción.
+- **Tailwind CSS 4** y **shadcn/ui**: estilos responsive y componentes de interfaz.
+- **Supabase**: PostgreSQL, autenticación con Google, RLS, roles y funciones RPC.
+- **Drizzle**: esquema de referencia y organización de migraciones.
+- **Zod** y **React Hook Form**: validación y formularios donde corresponda.
+- **date-fns**, **Recharts**, **Sonner** y **Lucide React**: utilidades de fechas, gráficos, mensajes y iconos.
+- **Vitest**, **Testing Library** y **jsdom**: pruebas unitarias y de rutas.
 
-create table horario_atencion (
-  id int primary key default 1 check (id = 1),
-  hora_apertura time not null,
-  hora_cierre time not null check (hora_cierre > hora_apertura)
-);
+## Arquitectura y lógica
 
-create table configuracion (
-  id int primary key default 1 check (id = 1),
-  horas_min_cancelacion int not null default 2,
-  minutos_tolerancia int not null default 15,
-  max_reservas_activas int not null default 2,
-  max_bloques_billar int not null default 4
-);
+La aplicación mantiene las reglas sensibles en PostgreSQL y las utiliza mediante funciones RPC de Supabase. Las acciones de reserva, cancelación, cambio de estado y registro de consumo no dependen solamente de validaciones de la interfaz.
 
-create table peliculas (
-  id uuid primary key default gen_random_uuid(),
-  titulo text not null unique,
-  duracion_min int not null check (duracion_min > 0),
-  en_cartelera boolean not null default true
-);
+### Modelo de reserva
 
-create table reservas (
-  id uuid primary key default gen_random_uuid(),
-  codigo text not null unique,                       -- 8 caracteres alfanuméricos
-  usuario_id uuid references auth.users(id) on delete set null, -- null si es de mostrador sin cuenta
-  nombre_cliente text not null,
-  telefono_cliente text not null,
-  recurso_id uuid not null references recursos(id),
-  pelicula_id uuid references peliculas(id),         -- solo minicine
-  fecha date not null,
-  hora_inicio time not null,
-  bloques int not null check (bloques between 1 and 8),
-  estado estado_reserva not null default 'CONFIRMADA',
-  hora_entrada timestamptz,
-  hora_salida timestamptz,
-  creada_por uuid references auth.users(id),
-  creada_en timestamptz not null default now(),
-  unique (id, recurso_id, fecha)
-);
+- Un bloque representa una hora fija: por ejemplo, el bloque 14 corresponde de 14:00 a 15:00.
+- `reserva_bloques` conserva cada bloque ocupado por recurso y fecha. Su restricción única evita que dos reservas concurrentes ocupen el mismo recurso, fecha y bloque.
+- Los horarios pasados no son seleccionables y la grilla deshabilita bloques ocupados o incompletos.
+- La reserva de billar utiliza 1 a `max_bloques_billar` bloques configurables.
+- La reserva de minicine calcula los bloques con `ceil(duracion_min / 60)` y registra hasta 7 personas.
+- El costo estimado combina la tarifa del recurso y los productos seleccionados.
 
--- Impide superposiciones aunque dos personas reserven a la vez (RN 02)
-create table reserva_bloques (
-  id uuid primary key default gen_random_uuid(),
-  reserva_id uuid not null,
-  recurso_id uuid not null references recursos(id),
-  fecha date not null,
-  bloque int not null check (bloque between 0 and 23),
-  constraint uq_recurso_fecha_bloque unique (recurso_id, fecha, bloque),
-  constraint fk_bloque_reserva foreign key (reserva_id, recurso_id, fecha)
-    references reservas(id, recurso_id, fecha) on delete cascade
-);
+### Roles y perfil
 
-create table productos (
-  id uuid primary key default gen_random_uuid(),
-  nombre text not null unique,
-  precio numeric(10,2) not null check (precio >= 0),
-  existencias int not null default 0 check (existencias >= 0),
-  activo boolean not null default true
-);
+- Los roles se guardan en `user_roles`, nunca dentro de `profiles`.
+- `lista_blanca` identifica los correos de recepción y administración.
+- Un trigger sobre `auth.users` crea el perfil, asigna el rol de personal presente en la lista blanca y deja `CLIENTE` para los demás usuarios.
+- La función `has_role()` usa `SECURITY DEFINER` para consultar roles sin recurrir a políticas RLS que puedan entrar en recursión.
+- RLS protege las tablas; las lecturas públicas de catálogo están restringidas a información necesaria y las modificaciones críticas pasan por RPC.
 
--- Pedido previo del cliente (NO descuenta stock)
-create table pedido_candy (
-  id uuid primary key default gen_random_uuid(),
-  reserva_id uuid not null references reservas(id) on delete cascade,
-  producto_id uuid not null references productos(id),
-  cantidad int not null check (cantidad > 0)
-);
+### Disponibilidad y concurrencia
 
--- Consumo real registrado por recepción (SÍ descuenta stock)
-create table consumos (
-  id uuid primary key default gen_random_uuid(),
-  reserva_id uuid not null references reservas(id),
-  producto_id uuid not null references productos(id),
-  cantidad int not null check (cantidad > 0),
-  precio_unitario numeric(10,2) not null check (precio_unitario >= 0),
-  fecha timestamptz not null default now(),
-  registrado_por uuid references auth.users(id)
-);
+- `obtener_ocupacion(p_fecha, p_tipo)` devuelve únicamente recurso y bloque ocupados, sin exponer reservas ajenas.
+- `crear_reserva()` valida autenticación, perfil completo, máximo de reservas activas, horario, duración, película, personas y disponibilidad.
+- El pedido de candy bar se guarda en `pedido_candy` sin alterar el stock.
+- `registrar_consumo()` bloquea el producto, verifica existencias y registra el consumo junto con el descuento de stock dentro de una transacción.
+- Los estados y límites de cancelación se validan con las funciones RPC y con el modelo de tiempo de La Paz.
 
-create index on reservas (usuario_id, estado);
-create index on reservas (fecha);
-create index on consumos (reserva_id);
-```
+### Zona horaria y cifras
 
-Además:
-- Trigger on auth.users (SECURITY DEFINER): crea la fila en profiles; si el correo está en lista_blanca asigna ese rol, y si no asigna CLIENTE.
-- RLS activado en TODAS las tablas. Políticas: el cliente lee y gestiona solo sus profiles, sus reservas, sus pedido_candy y sus consumos (lectura); recursos, tarifas, películas en cartelera, productos activos, horario y configuracion son legibles por cualquier usuario autenticado; recepción lee todas las reservas y consumos; solo ADMINISTRADOR escribe en recursos, tarifas, horario_atencion, configuracion, peliculas, productos (alta y edición) y lista_blanca; user_roles solo lectura propia. Las escrituras de reservas, bloques y consumos se hacen SOLO mediante las funciones RPC de abajo (sin políticas de insert/update directas para clientes).
+- Las fechas y horas de negocio se gestionan como fecha local en La Paz y el identificador absoluto se calcula con UTC-4.
+- El pago es en efectivo en el local y no se guarda como cobro, método de pago ni comprobante.
+- Los precios y consumos se representan con valores numéricos y se formatean como pesos bolivianos (`Bs`).
 
-## 5. Funciones RPC (PostgreSQL, SECURITY DEFINER, validan auth.uid() y rol)
-- obtener_ocupacion(p_fecha date, p_tipo tipo_recurso[]) → devuelve (recurso_id, bloque) de los bloques ocupados. Es la única forma de que el cliente vea la ocupación sin leer reservas ajenas.
-- crear_reserva(p_recurso_id, p_fecha, p_hora_inicio, p_bloques, p_pelicula_id, p_nombre_cliente, p_telefono_cliente, p_productos jsonb) → crea la reserva. Valida: usuario autenticado; si es cliente, usa su propio id y sus datos, tiene acepto_datos = true y no supera el máximo de reservas activas (RN 11); no es una hora pasada; está dentro del horario de atención; billar: 1 a max_bloques_billar; minicine: exige película y bloques = ceil(duracion/60) y solo entonces acepta p_productos (RN 06, guardados en pedido_candy sin tocar stock); recepción puede crear con nombre y teléfono sin cuenta (usuario_id null). Genera el código de 8 caracteres, inserta la reserva y sus bloques. Si salta unique_violation, lanza el error 'HORARIO_OCUPADO'.
-- cancelar_reserva(p_id) → el cliente solo la suya y con al menos horas_min_cancelacion de anticipación (si no, error 'FUERA_DE_PLAZO'); recepción puede cancelar cualquiera. Pasa a CANCELADA y borra sus bloques.
-- cambiar_estado_reserva(p_id, p_estado) → solo recepción o administrador. Transiciones válidas: CONFIRMADA→EN_USO (guarda hora_entrada), EN_USO→FINALIZADA (guarda hora_salida), CONFIRMADA→NO_PRESENTADA (solo si pasó la tolerancia). Al pasar a FINALIZADA o NO_PRESENTADA se borran los bloques para liberar el recurso.
-- registrar_consumo(p_reserva_id, p_producto_id, p_cantidad) → solo recepción o administrador, solo en reservas de minicine EN_USO. Bloquea la fila del producto (FOR UPDATE), verifica existencias (si no hay, error 'SIN_STOCK'), inserta el consumo con el precio vigente y descuenta el stock en la misma transacción.
-- reporte_resumen(p_desde date, p_hasta date) → solo administrador. Devuelve: % de ocupación (bloques de reservas EN_USO y FINALIZADA ÷ (recursos activos × bloques de atención por día × días)), ocupación por tipo de recurso, e ingresos estimados = Σ(tarifa.precio_hora × bloques de reservas FINALIZADAS) + Σ(consumos.cantidad × precio_unitario), desglosados por día.
+## Rutas
 
-## 6. Datos iniciales (seed)
-Horario 10:00-23:00; configuracion por defecto; 3 mesas normales (Mesa 1 a 3, capacidad 6), 2 mesas VIP (Mesa VIP 1 y 2, capacidad 8), 2 salas (Sala 1 de 8 y Sala 2 de 12); tarifas: normal Bs 30, VIP Bs 50, minicine Bs 60 por hora; 5 películas con su duración real; 8 productos con stock (pipocas grandes y medianas, gaseosa, agua, nachos, hot dog, chocolate, cerveza). En lista_blanca agrega antoniomir534@gmail.com como ADMINISTRADOR para poder entrar como administrador desde el primer día.
+TanStack Router genera el árbol de navegación desde `src/routes`. Los nombres con guion bajo son rutas de layout y no forman segmentos visibles en la URL.
 
-## 7. Pantallas
-Cliente:
-1. Landing + botón "Ingresar con Google".
-2. Completar perfil (teléfono + aceptación de datos).
-3. Nueva reserva: elegir servicio (billar / minicine), fecha (no pasadas) y, en minicine, la película. Grilla por recurso (mesas normales, mesas VIP o salas) con los bloques de la jornada: libres seleccionables y ocupados deshabilitados. Para billar, elige duración (1-4 h). Si no hay horarios libres ese día, lo indica.
-4. Resumen: recurso y modalidad o película, fecha, hora, duración, pedido opcional de candy bar (solo minicine) y costo estimado (tarifa × horas + productos). Botón Confirmar.
-5. Confirmación: código grande y destacado, detalles, aviso "El pago se realiza en efectivo en el local". Si el servidor responde HORARIO_OCUPADO, mostrar aviso, refrescar la grilla y dejar elegir otro horario.
-6. Mis reservas: lista con estado y botón Cancelar (deshabilitado con explicación si falta menos del plazo).
-Recepcionista:
-7. Panel del día: reservas de hoy por recurso y estado; buscar por código o nombre; botones Registrar entrada, Registrar salida y Marcar no presentada (solo tras la tolerancia).
-8. Reserva en mostrador: misma grilla que el cliente, más nombre y teléfono del cliente.
-9. Detalle de reserva de minicine: ver el pedido previo, registrar consumos (muestra existencias, bloquea si no hay stock).
-Administrador:
-10. CRUD de recursos, tarifas, horario de atención, configuración (plazo de cancelación, tolerancia, máximo de reservas), películas, productos y stock.
-11. Gestión de personal: agregar o quitar correos en la lista blanca con su rol.
-12. Reportes: rango de fechas, % de ocupación, ingresos estimados por día y por tipo de recurso, con un gráfico simple y una tabla.
+| Ruta | Archivo principal | Acceso y función |
+| --- | --- | --- |
+| `/` | `src/routes/index.tsx` | Landing e inicio de sesión con Google. Redirige según sesión y rol. |
+| `/perfil` | `src/routes/_authenticated/perfil.tsx` | Completa teléfono y consentimiento de datos. |
+| `/cliente` | `src/routes/_authenticated/cliente/index.tsx` | Mis reservas del usuario autenticado. |
+| `/cliente/nueva` | `src/routes/_authenticated/cliente/nueva.tsx` | Constructor de reservas para billar y minicine. |
+| `/cliente/reserva/$id` | `src/routes/_authenticated/cliente/reserva.$id.tsx` | Confirmación y detalle de una reserva. |
+| `/recepcion` | `src/routes/_authenticated/recepcion/index.tsx` | Panel diario, búsqueda y acciones de estado. |
+| `/recepcion/mostrador` | `src/routes/_authenticated/recepcion/mostrador.tsx` | Reserva de mostrador para clientes sin cuenta. |
+| `/recepcion/reserva/$id` | `src/routes/_authenticated/recepcion/reserva.$id.tsx` | Detalle, confirmación, cambios de estado y consumos. |
+| `/admin` | `src/routes/_authenticated/admin/index.tsx` | Panel base disponible para administradores. |
 
-## 8. Calidad y criterios de aceptación
-- Diseño limpio, moderno y responsive (móvil primero). Textos y mensajes de error en español, claros.
-- Dos clientes que intentan reservar el mismo bloque a la vez: solo uno lo logra; el otro recibe "El horario fue ocupado" y la grilla se actualiza.
-- Un cliente con 2 reservas activas no puede crear una tercera.
-- Un cliente no puede cancelar con menos de 2 horas de anticipación.
-- Reservar minicine con productos NO cambia el stock; registrar el consumo en recepción SÍ lo cambia y bloquea si no hay existencias.
-- Un cliente no puede ver reservas ajenas ni entrar a /recepcion o /admin; un correo fuera de la lista blanca nunca obtiene rol de personal.
-- No existe ninguna pantalla ni campo de pago, método de pago ni comprobante.
+### Protección de rutas
 
-## 9. Orden de construcción
-Hazlo por fases y verifica cada una antes de la siguiente: (1) esquema, RLS, trigger de roles, funciones y seed; (2) login con Google, perfil y rutas por rol; (3) flujo del cliente (grilla, reserva, confirmación, mis reservas, cancelación); (4) recepción; (5) administración y reportes. Si algo del enunciado es ambiguo, toma la opción más simple, indícalo en una línea y continúa.
+- `src/routes/_authenticated/route.tsx` carga la sesión antes de renderizar las rutas protegidas y redirige a `/` si no existe una sesión válida.
+- `/cliente` exige perfil completo y redirige al perfil o a recepción según corresponda.
+- `/recepcion` exige el rol `RECEPCIONISTA` o `ADMINISTRADOR`.
+- `/admin` exige `ADMINISTRADOR`.
+- `/` usa el rol y el estado del perfil para elegir el destino inicial:
+  `ADMINISTRADOR` → `/admin`, `RECEPCIONISTA` → `/recepcion`, perfil incompleto → `/perfil` y cliente completo → `/cliente`.
+- `__root.tsx` contiene el shell global, proveedores, notificaciones y el layout raíz.
+- El árbol generado `src/routeTree.gen.ts` se genera automáticamente y no se modifica a mano.
 
-This project was built with [Lovable](https://lovable.dev).
+## Base de datos
 
-## Build with Lovable
+El esquema y las migraciones viven dentro del repositorio:
 
-Continue developing this project in the [Lovable editor](https://lovable.dev/projects/c7025b61-a3e6-4de1-90a9-ef48bf076050).
+- [drizzle/schema.ts](drizzle/schema.ts) contiene el esquema de referencia.
+- [drizzle/migrations/](drizzle/migrations) contiene las migraciones SQL numeradas, incluyendo roles, permisos, perfil, reservas, ocupación, funciones auxiliares y cancelación.
+- Los datos iniciales incluyen horario de atención, configuración, recursos, tarifas, películas y productos.
 
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: every change made in Lovable is committed straight to this repository.
-- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
+Las migraciones deben aplicarse en orden sobre el proyecto propio de Supabase. Las migraciones SQL son la fuente de verdad para tablas, índices, RLS, triggers y RPC.
 
-## Development
+## Configuración local
 
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
+Requisitos:
+
+- Node.js y npm.
+- Un proyecto propio de Supabase.
+- Google OAuth configurado en Supabase Auth.
+
+Instalación:
 
 ```sh
-git clone <this-repository-url>
-cd <repository-name>
-npm i
+npm install
 npm run dev
 ```
+
+La aplicación espera las siguientes variables de entorno públicas de Supabase:
+
+```dotenv
+VITE_SUPABASE_URL=https://TU-PROYECTO.supabase.co
+VITE_SUPABASE_PUBLISHABLE_KEY=TU_CLAVE_PUBLICABLE
+```
+
+Para renderizado o ejecución mediante las variables del servidor, también se pueden definir:
+
+```dotenv
+SUPABASE_URL=https://TU-PROYECTO.supabase.co
+SUPABASE_PUBLISHABLE_KEY=TU_CLAVE_PUBLICABLE
+```
+
+No se debe incluir una `service_role` key, clave secreta o credencial de migración en el código del cliente ni en variables `VITE_*`.
+
+## Comandos
+
+```sh
+npm run dev       # Servidor de desarrollo
+npm run build     # Compilación de producción
+npm run preview   # Vista previa de la compilación
+npm run lint      # Revisión con ESLint
+npm run test       # Pruebas con Vitest
+npm run test:watch # Pruebas en modo observación
+```
+
+## Validación
+
+Las pruebas cubren utilidades del negocio, disponibilidad de bloques, cancelaciones, cálculos de minicine y protección de rutas por rol. La mayor parte de las reglas críticas se verifican además en Supabase mediante restricciones únicas, RLS y funciones RPC.

@@ -110,7 +110,7 @@ const ERRORES: Record<string, string> = {
 export function mensajeError(err: unknown): string {
   const msg = err && typeof err === "object" && "message" in err ? String((err as { message: unknown }).message) : String(err);
   for (const k of Object.keys(ERRORES)) if (msg.includes(k)) return ERRORES[k] as string;
-  return "Ocurrió un error. Intenta nuevamente.";
+  return msg || "Ocurrió un error. Intenta nuevamente.";
 }
 export function bs(n: number): string {
   return `Bs ${Number(n).toFixed(2)}`;

@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Clapperboard, Minus, Plus, Target } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -16,9 +17,17 @@ import { cn } from "@/lib/utils";
 
 type Servicio = "billar" | "minicine";
 
+function mensajeConsulta(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  if (error && typeof error === "object" && "message" in error && typeof error.message === "string") {
+    return error.message;
+  }
+  return "Supabase devolvió un error sin descripción.";
+}
+
 export function ReservaBuilder({ mostrador, onCreada }: { mostrador?: boolean; onCreada: (id: string) => void }) {
   const qc = useQueryClient();
-  const { data: cat, isLoading } = useQuery(catalogoQuery);
+  const { data: cat, isLoading, isError, error, refetch } = useQuery(catalogoQuery);
   const [servicio, setServicio] = useState<Servicio>("billar");
   const [fecha, setFecha] = useState(hoyLaPaz());
   const [peliculaId, setPeliculaId] = useState<string | null>(null);
@@ -60,7 +69,29 @@ export function ReservaBuilder({ mostrador, onCreada }: { mostrador?: boolean; o
     setSel(null);
   }
 
-  if (isLoading || !cat) return <p className="text-muted-foreground">Cargando…</p>;
+  if (isLoading) return <p className="text-muted-foreground">Cargando catálogo…</p>;
+  if (isError) {
+    return (
+      <Alert variant="destructive">
+        <AlertTitle>No se pudo cargar el catálogo de reservas</AlertTitle>
+        <AlertDescription className="mt-2 space-y-3">
+          <p>{mensajeConsulta(error)}</p>
+          <p>Revisa en Supabase los permisos y las políticas RLS de recursos, tarifas, horario_atencion, configuracion, peliculas y productos.</p>
+          <Button type="button" variant="outline" size="sm" onClick={() => void refetch()}>
+            Reintentar
+          </Button>
+        </AlertDescription>
+      </Alert>
+    );
+  }
+  if (!cat) {
+    return (
+      <Alert variant="destructive">
+        <AlertTitle>El catálogo está vacío</AlertTitle>
+        <AlertDescription>La consulta terminó sin devolver la configuración necesaria para crear reservas.</AlertDescription>
+      </Alert>
+    );
+  }
 
   const recursoSel = cat.recursos.find((r) => r.id === sel?.recursoId);
   const productosActivos = cat.productos.filter((p) => p.activo);
@@ -73,30 +104,48 @@ export function ReservaBuilder({ mostrador, onCreada }: { mostrador?: boolean; o
     if (!sel) return;
     if (mostrador && (!nombre.trim() || !tel.trim())) return toast.error("Ingresa el nombre y teléfono del cliente.");
     setEnviando(true);
-    const { data, error } = await supabase.rpc("crear_reserva", {
-      p_recurso_id: sel.recursoId,
-      p_fecha: fecha,
-      p_hora_inicio: hh(sel.inicio),
-      p_bloques: bloques,
-      p_pelicula_id: servicio === "minicine" ? peliculaId : undefined,
-      p_nombre_cliente: mostrador ? nombre.trim() : undefined,
-      p_telefono_cliente: mostrador ? tel.trim() : undefined,
-      p_productos: servicio === "minicine" ? items.map(({ producto_id, cantidad }) => ({ producto_id, cantidad })) : [],
-      p_personas: servicio === "minicine" ? personas : undefined,
-    } as never);
-    setEnviando(false);
-    if (error) {
-      toast.error(mensajeError(error));
-      if (error.message.includes("HORARIO_OCUPADO")) {
-        setSel(null);
-        qc.invalidateQueries({ queryKey: ["ocupacion"] });
+    try {
+      const { data, error } = await supabase.rpc("crear_reserva", {
+        p_recurso_id: sel.recursoId,
+        p_fecha: fecha,
+        p_hora_inicio: hh(sel.inicio),
+        p_bloques: bloques,
+        p_pelicula_id: servicio === "minicine" ? peliculaId : undefined,
+        p_nombre_cliente: mostrador ? nombre.trim() : undefined,
+        p_telefono_cliente: mostrador ? tel.trim() : undefined,
+        p_productos: servicio === "minicine" ? items.map(({ producto_id, cantidad }) => ({ producto_id, cantidad })) : [],
+        p_personas: servicio === "minicine" ? personas : undefined,
+      } as never);
+      if (error) {
+        toast.error("No se pudo confirmar la reserva.", {
+          description: mensajeError(error),
+        });
+        if (error.message.includes("HORARIO_OCUPADO")) {
+          setSel(null);
+          qc.invalidateQueries({ queryKey: ["ocupacion"] });
+        }
+        return;
       }
-      return;
+
+      const reserva = data as unknown as { id?: string } | null;
+      if (!reserva?.id) {
+        toast.error("Supabase no devolvió la reserva creada.", {
+          description: "Verifica que la función crear_reserva en Supabase coincida con la migración 0003.",
+        });
+        return;
+      }
+
+      qc.invalidateQueries({ queryKey: ["ocupacion"] });
+      qc.invalidateQueries({ queryKey: ["reservas"] });
+      onCreada(reserva.id);
+    } catch (error) {
+      console.error("Error inesperado al confirmar la reserva:", error);
+      toast.error("No se pudo confirmar la reserva.", {
+        description: mensajeError(error),
+      });
+    } finally {
+      setEnviando(false);
     }
-    qc.invalidateQueries({ queryKey: ["ocupacion"] });
-    qc.invalidateQueries({ queryKey: ["reservas"] });
-    const r = data as unknown as { id: string };
-    onCreada(r.id);
   }
 
   return (
@@ -164,11 +213,22 @@ export function ReservaBuilder({ mostrador, onCreada }: { mostrador?: boolean; o
             </div>
           </CardHeader>
           <CardContent>
+            {ocup.isError && (
+              <Alert variant="destructive" className="mb-3">
+                <AlertTitle>No se pudo cargar la disponibilidad</AlertTitle>
+                <AlertDescription className="mt-2 space-y-3">
+                  <p>{mensajeConsulta(ocup.error)}</p>
+                  <Button type="button" variant="outline" size="sm" onClick={() => void ocup.refetch()}>
+                    Reintentar
+                  </Button>
+                </AlertDescription>
+              </Alert>
+            )}
             {!listo ? (
               <p className="py-6 text-center text-muted-foreground">Elige una película para ver los horarios.</p>
             ) : (
               <>
-                {!hayLibres && !ocup.isLoading && (
+                {!ocup.isError && !hayLibres && !ocup.isLoading && (
                   <p className="mb-3 rounded-md bg-muted p-3 text-sm">No hay horarios libres este día para la duración elegida. Prueba otra fecha.</p>
                 )}
                 <div className="overflow-x-auto">

@@ -1,5 +1,6 @@
-ALTER TABLE public.reservas ADD COLUMN personas integer;
-DROP FUNCTION public.crear_reserva(uuid, date, time without time zone, integer, uuid, text, text, jsonb);
+ALTER TABLE public.reservas ADD COLUMN IF NOT EXISTS personas integer;
+DROP FUNCTION IF EXISTS public.crear_reserva(uuid, date, time without time zone, integer, uuid, text, text, jsonb);
+DROP FUNCTION IF EXISTS public.crear_reserva(uuid, date, time without time zone, integer, uuid, text, text, jsonb, integer);
 CREATE FUNCTION public.crear_reserva(p_recurso_id uuid, p_fecha date, p_hora_inicio time without time zone, p_bloques integer, p_pelicula_id uuid DEFAULT NULL::uuid, p_nombre_cliente text DEFAULT NULL::text, p_telefono_cliente text DEFAULT NULL::text, p_productos jsonb DEFAULT '[]'::jsonb, p_personas integer DEFAULT NULL)
  RETURNS reservas
  LANGUAGE plpgsql
@@ -90,3 +91,5 @@ begin
 end $function$;
 REVOKE EXECUTE ON FUNCTION public.crear_reserva(uuid, date, time without time zone, integer, uuid, text, text, jsonb, integer) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.crear_reserva(uuid, date, time without time zone, integer, uuid, text, text, jsonb, integer) TO authenticated;
+
+NOTIFY pgrst, 'reload schema';

@@ -14,8 +14,16 @@ export const catalogoQuery = queryOptions({
     const [recursos, tarifas, horario, config, peliculas, productos] = await Promise.all([
       q(supabase.from("recursos").select("*").order("nombre")),
       q(supabase.from("tarifas").select("*")),
-      supabase.from("horario_atencion").select("*").eq("id", 1).single().then((r) => { if (r.error) throw r.error; return r.data; }),
-      supabase.from("configuracion").select("*").eq("id", 1).single().then((r) => { if (r.error) throw r.error; return r.data; }),
+      supabase.from("horario_atencion").select("*").eq("id", 1).maybeSingle().then((r) => {
+        if (r.error) throw r.error;
+        if (!r.data) throw new Error("Falta la fila id=1 en horario_atencion. Ejecuta la migración 0007_datos_iniciales.sql.");
+        return r.data;
+      }),
+      supabase.from("configuracion").select("*").eq("id", 1).maybeSingle().then((r) => {
+        if (r.error) throw r.error;
+        if (!r.data) throw new Error("Falta la fila id=1 en configuracion. Ejecuta la migración 0007_datos_iniciales.sql.");
+        return r.data;
+      }),
       q(supabase.from("peliculas").select("*").order("titulo")),
       q(supabase.from("productos").select("*").order("nombre")),
     ]);

@@ -21,6 +21,8 @@ export const reservaQuery = (id: string) =>
         supabase.from("consumos").select("id,cantidad,precio_unitario,fecha,productos(nombre)").eq("reserva_id", id).order("fecha"),
       ]);
       if (r.error) throw r.error;
+      if (ped.error) throw ped.error;
+      if (con.error) throw con.error;
       return {
         reserva: r.data as unknown as ReservaFull | null,
         pedido: (ped.data ?? []) as unknown as { id: string; cantidad: number; productos: { nombre: string; precio: number } | null }[],

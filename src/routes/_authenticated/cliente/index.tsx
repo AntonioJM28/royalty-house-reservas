@@ -19,7 +19,7 @@ function MisReservas() {
   const { sesion } = Route.useRouteContext();
   const qc = useQueryClient();
   const { data: cat } = useQuery(catalogoQuery);
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ["reservas", "mias", sesion.userId],
     queryFn: async () => {
       const { data, error } = await supabase.from("reservas").select(RESERVA_SELECT).eq("usuario_id", sesion.userId)
@@ -43,7 +43,12 @@ function MisReservas() {
         <h1 className="font-display text-4xl font-semibold">Mis reservas</h1>
         <Button asChild><Link to="/cliente/nueva">Nueva reserva</Link></Button>
       </div>
-      {isLoading ? <p className="text-muted-foreground">Cargando…</p> : !data?.length ? (
+      {isLoading ? <p className="text-muted-foreground">Cargando…</p> : isError ? (
+        <Card><CardContent className="space-y-3 py-6 text-destructive">
+          <p>No se pudieron cargar tus reservas: {error instanceof Error ? error.message : "Error desconocido consultando Supabase."}</p>
+          <Button type="button" variant="outline" onClick={() => void refetch()}>Reintentar</Button>
+        </CardContent></Card>
+      ) : !data?.length ? (
         <Card><CardContent className="py-10 text-center text-muted-foreground">Aún no tienes reservas.</CardContent></Card>
       ) : (
         <div className="grid gap-3 sm:grid-cols-2">

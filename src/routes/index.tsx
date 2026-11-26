@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { Clapperboard, Crown, Popcorn, Target } from "lucide-react";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { cargarSesion, destinoInicial } from "@/lib/sesion";
 import { GoogleButton } from "@/components/rh/GoogleButton";
@@ -23,14 +24,45 @@ function Landing() {
   const navigate = useNavigate();
   useEffect(() => {
     let vivo = true;
+    let comprobando = false;
+    let pendiente = false;
+    let navegando = false;
+
     const ir = async () => {
-      const s = await cargarSesion();
-      if (s && vivo) navigate({ to: destinoInicial(s) });
+      if (!vivo || navegando) return;
+      if (comprobando) {
+        pendiente = true;
+        return;
+      }
+
+      comprobando = true;
+      try {
+        const s = await cargarSesion();
+        if (s && vivo) {
+          navegando = true;
+          await navigate({ to: destinoInicial(s), replace: true });
+        }
+      } catch (error) {
+        console.error("No se pudo completar la redirección después del inicio de sesión:", error);
+        toast.error("No se pudo cargar tu sesión.", {
+          description: error instanceof Error ? error.message : "Intenta iniciar sesión nuevamente.",
+        });
+      } finally {
+        comprobando = false;
+        if (pendiente && vivo && !navegando) {
+          pendiente = false;
+          void ir();
+        }
+      }
     };
-    ir();
-    const { data } = supabase.auth.onAuthStateChange((e) => {
-      if (e === "SIGNED_IN") ir();
+
+    const { data } = supabase.auth.onAuthStateChange((event, session) => {
+      if ((event === "INITIAL_SESSION" || event === "SIGNED_IN") && session?.user) {
+        window.setTimeout(() => void ir(), 0);
+      }
     });
+    void ir();
+
     return () => {
       vivo = false;
       data.subscription.unsubscribe();

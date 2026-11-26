@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate, useRouter } from "@tanstack/react-router";
+import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -15,7 +15,6 @@ export const Route = createFileRoute("/_authenticated/perfil")({
 
 function Perfil() {
   const { sesion } = Route.useRouteContext();
-  const navigate = useNavigate();
   const router = useRouter();
   const [tel, setTel] = useState(sesion.perfil?.telefono ?? "");
   const [acepto, setAcepto] = useState(sesion.perfil?.acepto_datos ?? false);
@@ -26,11 +25,42 @@ function Perfil() {
     if (!/^[0-9+ ]{7,15}$/.test(tel.trim())) return toast.error("Ingresa un teléfono válido (7 a 15 dígitos).");
     if (!acepto) return toast.error("Debes aceptar el tratamiento de datos para reservar.");
     setGuardando(true);
-    const { error } = await supabase.from("profiles").update({ telefono: tel.trim(), acepto_datos: true }).eq("id", sesion.userId);
+    const { data: usuario } = await supabase.auth.getUser();
+    const user = usuario.user;
+    if (!user) {
+      setGuardando(false);
+      return toast.error("Tu sesión expiró. Vuelve a iniciar sesión.");
+    }
+
+    const { data: perfilGuardado, error } = await supabase.rpc("completar_perfil", {
+      p_telefono: tel.trim(),
+    });
     setGuardando(false);
-    if (error) return toast.error("No se pudo guardar tu perfil.");
+    if (error) {
+      console.error("Error guardando perfil:", error);
+      return toast.error("No se pudo guardar tu perfil.", {
+        description: error.message || "Revisa las políticas de seguridad de Supabase.",
+      });
+    }
+
+    if (
+      !perfilGuardado ||
+      typeof perfilGuardado !== "object" ||
+      !("telefono" in perfilGuardado) ||
+      perfilGuardado.telefono !== tel.trim() ||
+      !("acepto_datos" in perfilGuardado) ||
+      perfilGuardado.acepto_datos !== true ||
+      !("id" in perfilGuardado) ||
+      perfilGuardado.id !== user.id
+    ) {
+      console.error("La función de perfil terminó sin confirmar los datos guardados.", perfilGuardado);
+      return toast.error("No se confirmaron los datos del perfil.", {
+        description: "La base de datos no devolvió el perfil actualizado. Verifica la función completar_perfil en Supabase.",
+      });
+    }
+
     await router.invalidate();
-    navigate({ to: "/cliente/nueva" });
+    await router.navigate({ to: "/cliente/nueva" });
   }
 
   return (

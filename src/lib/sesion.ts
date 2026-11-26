@@ -5,14 +5,21 @@ export type Perfil = { id: string; nombre: string; correo: string; telefono: str
 export type Sesion = { userId: string; roles: Rol[]; perfil: Perfil | null };
 
 export async function cargarSesion(): Promise<Sesion | null> {
-  const { data } = await supabase.auth.getUser();
+  const { data, error: errorAuth } = await supabase.auth.getUser();
+  if (errorAuth) throw new Error(`No se pudo verificar la sesión: ${errorAuth.message}`);
   const user = data.user;
   if (!user) return null;
-  const [{ data: roles }, { data: perfil }] = await Promise.all([
+  const [rolesResult, perfilResult] = await Promise.all([
     supabase.from("user_roles").select("role").eq("user_id", user.id),
     supabase.from("profiles").select("id,nombre,correo,telefono,acepto_datos").eq("id", user.id).maybeSingle(),
   ]);
-  return { userId: user.id, roles: (roles ?? []).map((r) => r.role as Rol), perfil: perfil ?? null };
+  if (rolesResult.error) throw new Error(`No se pudieron cargar los roles: ${rolesResult.error.message}`);
+  if (perfilResult.error) throw new Error(`No se pudo cargar el perfil: ${perfilResult.error.message}`);
+  return {
+    userId: user.id,
+    roles: (rolesResult.data ?? []).map((r) => r.role as Rol),
+    perfil: perfilResult.data,
+  };
 }
 
 export const esAdmin = (r: Rol[]) => r.includes("ADMINISTRADOR");

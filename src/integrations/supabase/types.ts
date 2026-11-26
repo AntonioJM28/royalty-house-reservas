@@ -401,6 +401,10 @@ export type Database = {
     }
     Functions: {
       ahora_local: { Args: never; Returns: string }
+      completar_perfil: {
+        Args: { p_telefono: string }
+        Returns: Json
+      }
       cambiar_estado_reserva: {
         Args: {
           p_estado: Database["public"]["Enums"]["estado_reserva"]

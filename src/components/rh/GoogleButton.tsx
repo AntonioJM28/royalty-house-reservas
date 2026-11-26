@@ -1,14 +1,27 @@
 import { useState } from "react";
 import { toast } from "sonner";
-import { lovable } from "@/integrations/lovable/index";
+import { supabase } from "@/integrations/supabase/client";
 
 export function GoogleButton() {
   const [cargando, setCargando] = useState(false);
   async function ingresar() {
     setCargando(true);
-    const r = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
-    if (r.error) {
-      toast.error("No se pudo iniciar sesión con Google.");
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: window.location.origin,
+        },
+      });
+      if (error) {
+        toast.error("No se pudo iniciar sesión con Google.", {
+          description: error.message,
+        });
+      }
+    } catch (error) {
+      const mensaje = error instanceof Error ? error.message : "Error desconocido";
+      toast.error("No se pudo iniciar sesión con Google.", { description: mensaje });
+    } finally {
       setCargando(false);
     }
   }

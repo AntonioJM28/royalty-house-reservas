@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { recursoSchema, personalSchema, productoSchema } from './admin';
-import { esAdmin } from './sesion';
+import { destinoInicial, esAdmin, esPersonal } from './sesion';
 
 describe('Administración', () => {
   it('salas admiten hasta 7 asistentes', () => {
@@ -13,6 +13,12 @@ describe('Administración', () => {
     expect(esAdmin(['ADMINISTRADOR'])).toBe(true);
     expect(esAdmin(['CLIENTE'])).toBe(false);
     expect(esAdmin(['RECEPCIONISTA'])).toBe(false);
+  });
+  it('recepcionista va a recepción y nunca a administración', () => {
+    const sesion = { userId: 'recepcionista', roles: ['RECEPCIONISTA' as const], perfil: null };
+    expect(destinoInicial(sesion)).toBe('/recepcion');
+    expect(esPersonal(sesion.roles)).toBe(true);
+    expect(esAdmin(sesion.roles)).toBe(false);
   });
   it('personal solo tiene rol de recepción o administrador y normaliza el correo', () => {
     expect(personalSchema.parse({ correo: '  Persona@Example.com ', rol: 'RECEPCIONISTA' }).correo).toBe('persona@example.com');

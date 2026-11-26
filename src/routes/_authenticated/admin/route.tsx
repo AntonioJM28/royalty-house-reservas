@@ -1,10 +1,10 @@
 import { createFileRoute, Outlet, Link, redirect } from '@tanstack/react-router';
 import { Target, Clapperboard, CircleDollarSign, Film, Popcorn, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { esAdmin } from '@/lib/sesion';
+import { destinoInicial, esAdmin } from '@/lib/sesion';
 
 export const Route = createFileRoute('/_authenticated/admin')({
-  beforeLoad: ({ context }) => { if (!esAdmin(context.sesion.roles)) throw redirect({ to: '/cliente' }); },
+  beforeLoad: ({ context }) => { if (!esAdmin(context.sesion.roles)) throw redirect({ to: destinoInicial(context.sesion) }); },
   component: AdminLayout,
 });
 function AdminLayout() {

@@ -29,6 +29,13 @@
       "when": 1795445246882,
       "tag": "0003_reservas_personas_minicine",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1795653020740,
+      "tag": "0004_reporte_minicine_por_persona",
+      "breakpoints": true
     }
   ]
 }

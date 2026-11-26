@@ -1,15 +1,18 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
-import { esAdmin } from "@/lib/sesion";
+import { createFileRoute } from '@tanstack/react-router';
+import { AdminCatalog } from '@/components/rh/AdminEntity';
+import { AdminError, AdminNotFound } from '@/components/rh/AdminFeedback';
+import { adminCatalogQuery, adminSearch, adminHead } from '@/lib/admin';
 
-export const Route = createFileRoute("/_authenticated/admin/")({
-  beforeLoad: ({ context }) => {
-    if (!esAdmin(context.sesion.roles)) throw redirect({ to: "/cliente" });
-  },
-  head: () => ({ meta: [{ title: "Administración — Royalty House" }] }),
-  component: () => (
-    <div className="mx-auto max-w-2xl space-y-2">
-      <h1 className="font-display text-3xl">Administración</h1>
-      <p className="text-muted-foreground">Las pantallas de administración y reportes estarán disponibles pronto.</p>
-    </div>
-  ),
+export const Route = createFileRoute('/_authenticated/admin/')({
+  validateSearch: adminSearch,
+  loader: ({ context }) => context.queryClient.ensureQueryData(adminCatalogQuery),
+  head: () => adminHead('Mesas de billar — Administración', 'Gestión de mesas de billar de Royalty House.'),
+  errorComponent: AdminError,
+  notFoundComponent: AdminNotFound,
+  component: Page,
 });
+function Page() {
+  const search = Route.useSearch();
+  const navigate = Route.useNavigate();
+  return <AdminCatalog kind="mesas" search={search} onSearch={search => { void navigate({ search, replace: true }); }} />;
+}

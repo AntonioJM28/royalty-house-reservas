@@ -8,7 +8,7 @@ Aplicación web responsive en español para gestionar reservas de mesas de billa
 
 - Inicio de sesión mediante Google.
 - Completar teléfono y aceptar el tratamiento de datos antes de reservar.
-- Reservar una mesa de billar normal o VIP por bloques de una hora, con una duración de 1 a 4 horas.
+- Reservar una mesa de billar normal o VIP por bloques de una hora, dentro del límite configurable.
 - Elegir una sala de minicine y una película. La duración se calcula a partir de la duración de la película y se expresa en bloques consecutivos.
 - Indicar entre 1 y 7 asistentes para minicine.
 - Consultar horarios libres y ocupados, con bloqueo visual de los bloques no disponibles.
@@ -27,8 +27,9 @@ Aplicación web responsive en español para gestionar reservas de mesas de billa
 
 ### Administración
 
-- La navegación por rol reconoce al administrador y permite conservar acceso a las pantallas de recepción.
-- La ruta `/admin` contiene la estructura base de la sección administrativa; el catálogo, personal y reportes tienen su correspondiente capa de datos y permisos en Supabase.
+- Administrar mesas, salas, películas, productos, personal autorizado, tarifas y reglas de atención.
+- Consultar reportes de ocupación e ingresos por rango de fechas.
+- El rol `ADMINISTRADOR` también puede usar las funciones de recepción.
 
 ## Tecnologías
 
@@ -92,7 +93,14 @@ TanStack Router genera el árbol de navegación desde `src/routes`. Los nombres 
 | `/recepcion` | `src/routes/_authenticated/recepcion/index.tsx` | Panel diario, búsqueda y acciones de estado. |
 | `/recepcion/mostrador` | `src/routes/_authenticated/recepcion/mostrador.tsx` | Reserva de mostrador para clientes sin cuenta. |
 | `/recepcion/reserva/$id` | `src/routes/_authenticated/recepcion/reserva.$id.tsx` | Detalle, confirmación, cambios de estado y consumos. |
-| `/admin` | `src/routes/_authenticated/admin/index.tsx` | Panel base disponible para administradores. |
+| `/admin` | `src/routes/_authenticated/admin/index.tsx` | Gestión de mesas. |
+| `/admin/salas` | `src/routes/_authenticated/admin/salas.tsx` | Gestión de salas de minicine. |
+| `/admin/tarifas` | `src/routes/_authenticated/admin/tarifas.tsx` | Tarifas por tipo de recurso. |
+| `/admin/peliculas` | `src/routes/_authenticated/admin/peliculas.tsx` | Catálogo de películas. |
+| `/admin/productos` | `src/routes/_authenticated/admin/productos.tsx` | Productos e inventario de candy bar. |
+| `/admin/personal` | `src/routes/_authenticated/admin/personal.tsx` | Lista blanca y roles de recepción/administración. |
+| `/admin/reglas` | `src/routes/_authenticated/admin/reglas.tsx` | Horario, cancelación, tolerancia y límites. |
+| `/admin/reportes` | `src/routes/_authenticated/admin/reportes.tsx` | Ocupación e ingresos. |
 
 ### Protección de rutas
 
@@ -110,39 +118,50 @@ TanStack Router genera el árbol de navegación desde `src/routes`. Los nombres 
 El esquema y las migraciones viven dentro del repositorio:
 
 - [drizzle/schema.ts](drizzle/schema.ts) contiene el esquema de referencia.
-- [drizzle/migrations/](drizzle/migrations) contiene las migraciones SQL numeradas, incluyendo roles, permisos, perfil, reservas, ocupación, funciones auxiliares y cancelación.
-- Los datos iniciales incluyen horario de atención, configuración, recursos, tarifas, películas y productos.
+- [drizzle/migrations/](drizzle/migrations) contiene los scripts SQL versionados para tablas, roles, RLS, triggers, datos iniciales y funciones RPC.
+- [docs/migraciones-sql.md](docs/migraciones-sql.md) explica qué hace cada script y cómo aplicarlo sin duplicar cambios.
 
-Las migraciones deben aplicarse en orden sobre el proyecto propio de Supabase. Las migraciones SQL son la fuente de verdad para tablas, índices, RLS, triggers y RPC.
+Las migraciones deben aplicarse en el proyecto propio de Supabase y en el orden documentado. Antes de trabajar sobre una base existente, verifica qué scripts ya se ejecutaron. No vuelvas a correr la migración inicial sobre una base que ya tiene tablas.
 
 ## Configuración local
 
 Requisitos:
 
-- Node.js y npm.
+- Node.js `^20.19.0` o `>=22.12.0` y npm.
 - Un proyecto propio de Supabase.
 - Google OAuth configurado en Supabase Auth.
 
-Instalación:
+### Pasos para levantar el proyecto
+
+1. Clona el repositorio y entra a su carpeta.
+2. Crea un archivo `.env` en la raíz y configura las variables requeridas:
+
+   ```dotenv
+   VITE_SUPABASE_URL=https://TU-PROYECTO.supabase.co
+   VITE_SUPABASE_PUBLISHABLE_KEY=TU_CLAVE_PUBLICABLE
+   ```
+
+   Para ejecución server-side también se pueden definir `SUPABASE_URL` y `SUPABASE_PUBLISHABLE_KEY`. No pongas claves secretas o `service_role` en variables `VITE_*`.
+
+3. Configura Google como proveedor de Supabase Auth. Consulta [docs/autenticacion-google-supabase.md](docs/autenticacion-google-supabase.md).
+4. Aplica en el proyecto correcto de Supabase las migraciones que aún no estén ejecutadas. Sigue [docs/migraciones-sql.md](docs/migraciones-sql.md).
+5. Instala dependencias y levanta Vite:
 
 ```sh
-npm install
+npm ci
 npm run dev
 ```
 
-La aplicación espera las siguientes variables de entorno públicas de Supabase:
+El servidor usa `http://localhost:8080` y requiere ese puerto libre (`strictPort` está habilitado).
 
-```dotenv
-VITE_SUPABASE_URL=https://TU-PROYECTO.supabase.co
-VITE_SUPABASE_PUBLISHABLE_KEY=TU_CLAVE_PUBLICABLE
-```
-
-Para renderizado o ejecución mediante las variables del servidor, también se pueden definir:
+### Variables de entorno
 
 ```dotenv
 SUPABASE_URL=https://TU-PROYECTO.supabase.co
 SUPABASE_PUBLISHABLE_KEY=TU_CLAVE_PUBLICABLE
 ```
+
+`DATABASE_URL` es opcional para las herramientas Drizzle; debe ser una URL de conexión directa a la base PostgreSQL propia y mantenerse fuera del código y del navegador. La configuración de Drizzle no sustituye la aplicación explícita de los scripts SQL descrita en la guía de migraciones.
 
 No se debe incluir una `service_role` key, clave secreta o credencial de migración en el código del cliente ni en variables `VITE_*`.
 
@@ -160,3 +179,9 @@ npm run test:watch # Pruebas en modo observación
 ## Validación
 
 Las pruebas cubren utilidades del negocio, disponibilidad de bloques, cancelaciones, cálculos de minicine y protección de rutas por rol. La mayor parte de las reglas críticas se verifican además en Supabase mediante restricciones únicas, RLS y funciones RPC.
+
+## Documentación adicional
+
+- [Migraciones SQL](docs/migraciones-sql.md): historial, orden y aplicación de cambios de base de datos.
+- [Lógica básica de la aplicación](docs/logica-aplicacion.md): roles, reservas, disponibilidad y flujo de datos.
+- [Google OAuth con Supabase](docs/autenticacion-google-supabase.md): configuración del proveedor y función del cliente OAuth de Google Cloud.

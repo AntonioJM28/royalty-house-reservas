@@ -459,6 +459,15 @@ export type Database = {
         }
         Returns: boolean
       }
+      ingreso_reserva: {
+        Args: {
+          p_bloques: number
+          p_personas: number
+          p_precio: number
+          p_tipo: Database["public"]["Enums"]["tipo_recurso"]
+        }
+        Returns: number
+      }
       obtener_ocupacion: {
         Args: {
           p_fecha: string

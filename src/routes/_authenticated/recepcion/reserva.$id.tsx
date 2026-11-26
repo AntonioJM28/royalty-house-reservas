@@ -21,12 +21,44 @@ export const Route = createFileRoute("/_authenticated/recepcion/reserva/$id")({
 function Detalle() {
   const { id } = Route.useParams();
   const qc = useQueryClient();
-  const { data, isLoading } = useQuery(reservaQuery(id));
-  const { data: cat } = useQuery(catalogoQuery);
+  const { data, isLoading, isError, error, refetch } = useQuery(reservaQuery(id));
+  const {
+    data: cat,
+    isLoading: isLoadingCatalogo,
+    isError: isCatalogoError,
+    error: catalogoError,
+    refetch: refetchCatalogo,
+  } = useQuery(catalogoQuery);
   const [prod, setProd] = useState("");
   const [cant, setCant] = useState(1);
   const [enviando, setEnviando] = useState(false);
-  if (isLoading || !cat) return <p className="text-muted-foreground">Cargando…</p>;
+  if (isLoading || isLoadingCatalogo) return <p className="text-muted-foreground">Cargando…</p>;
+  if (isError) {
+    return (
+      <div className="space-y-3">
+        <p role="alert">
+          No se pudo consultar la reserva:{" "}
+          {mensajeError(error)}
+        </p>
+        <Button type="button" variant="outline" onClick={() => void refetch()}>
+          Reintentar
+        </Button>
+      </div>
+    );
+  }
+  if (isCatalogoError || !cat) {
+    return (
+      <div className="space-y-3">
+        <p role="alert">
+          No se pudo cargar el catálogo:{" "}
+          {mensajeError(catalogoError)}
+        </p>
+        <Button type="button" variant="outline" onClick={() => void refetchCatalogo()}>
+          Reintentar
+        </Button>
+      </div>
+    );
+  }
   if (!data?.reserva) return <p>No se encontró la reserva.</p>;
   const r = data.reserva;
   const esCine = r.recursos?.tipo === "SALA_MINICINE";
